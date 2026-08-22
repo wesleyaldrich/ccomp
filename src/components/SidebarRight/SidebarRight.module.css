@@ -1,0 +1,19 @@
+.sidebar-right {
+    width: 280px;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: var(--size-gap);
+}
+
+.menu-icons {
+    background-color: var(--color-surface);
+    width: 64px;
+    height: 100%;
+}
+
+.menu-expanded {
+    background-color: var(--color-surface);
+    flex: 1;
+}
+ 
