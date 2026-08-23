@@ -1,6 +1,6 @@
 .code-editor {
     height: 100%;
-    width: 1000px;
+    flex: 1;
     background-color: var(--color-surface-raised);
     display: flex;
     flex-direction: column;
