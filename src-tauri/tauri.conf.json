@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ccomp",
+  "productName": "CComp IDE",
   "version": "0.1.0",
   "identifier": "io.github.wesleyaldrich.ccomp",
   "build": {
@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
-        "title": "ccomp",
+        "title": "C Competitive IDE - CComp IDE",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "decorations": false
       }
     ],
     "security": {

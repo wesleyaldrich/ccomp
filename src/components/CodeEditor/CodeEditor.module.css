@@ -1,0 +1,18 @@
+.code-editor {
+    height: 100%;
+    flex: 1;
+    background-color: var(--color-surface-raised);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-gap);
+}
+
+.menu-top {
+    height: 40px;
+    background-color: var(--color-surface-raised);
+}
+
+.menu-tabs {
+    flex: 1;
+    background-color: var(--color-surface);
+}
