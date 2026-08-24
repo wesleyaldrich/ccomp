@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import iconCComp from "../../assets/icons/icon_ccomp.svg";
+import iconCComp from "../../../src-tauri/icons/logo_ccomp.svg";
 import "./TitleBar.css";
 import { TitleBarSearch } from "./TitleBarSearch";
 import { TitleBarActions } from "./TitleBarActions";
@@ -54,7 +54,7 @@ function TitleBar() {
           />
 
           <span className="titlebar__app-name">
-            C Competitive IDE - CComp IDE
+            CComp IDE
           </span>
         </div>
 

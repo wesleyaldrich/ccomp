@@ -4,6 +4,9 @@
   cause CSS conflicts on child components.
 */
 
+@import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 /*
   Define all variables here.
   Feel free to add yours when needed. */
@@ -14,6 +17,9 @@
   --color-surface: rgb(23, 30, 38);
   --color-surface-raised: rgb(19, 25, 33);
   --color-active: rgb(26, 35, 44);
+
+  /* Title Bar Color Codes */
+  --color-title-bar-app-name: rgb(122, 122, 122);
   
   /* Global Sizes */
   --size-gap: 1px;
@@ -21,6 +27,11 @@
 
 body {
   margin: 0;
+
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .app-container {
