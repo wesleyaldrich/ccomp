@@ -1,0 +1,295 @@
+/* =========================================================
+   CCOMP TITLE BAR
+   ========================================================= */
+
+.titlebar {
+  --titlebar-height: 50px;
+  --titlebar-background: #131921;
+  --titlebar-border: rgba(255, 255, 255, 0.07);
+  --titlebar-text: #e6edf3;
+  --titlebar-text-secondary: #9da7b3;
+  --titlebar-text-muted: #687482;
+  --titlebar-hover: rgba(255, 255, 255, 0.07);
+  --titlebar-search-background: rgba(255, 255, 255, 0.04);
+  --titlebar-focus: #3b82f6;
+  --titlebar-close: #e81123;
+
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: var(--titlebar-height);
+  flex-shrink: 0;
+  background: var(--titlebar-background);
+  border-bottom: 1px solid var(--titlebar-border);
+  color: var(--titlebar-text);
+  user-select: none;
+  z-index: 1000;
+}
+
+/* =========================================================
+   CONTENT / DRAG REGION
+   ========================================================= */
+  
+.titlebar__content {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.titlebar__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-left: 16px;
+  grid-column: 1;
+  justify-self: start;
+}
+
+.titlebar__logo {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.titlebar__app-name {
+  min-width: 0;
+  margin-left: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--titlebar-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.titlebar__search {
+  display: flex;
+  align-items: center;
+  grid-column: 2;
+  justify-self: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 16px;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  background: var(--titlebar-search-background);
+  color: var(--titlebar-text-secondary);
+  font: inherit;
+  cursor: text;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.titlebar__search:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--titlebar-text);
+}
+
+.titlebar__search:focus-within {
+  outline: 1px solid var(--titlebar-focus);
+  outline-offset: 1px;
+}
+
+.titlebar__search-icon {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  color: var(--titlebar-text-muted);
+  stroke-width: 1.8;
+}
+
+.titlebar__search-input {
+  flex: 1;
+  min-width: 0;
+  margin-left: 8px;
+  padding: 0;
+  border: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+  background-color: transparent !important; 
+  color: var(--titlebar-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: text;
+}
+
+.titlebar__search-input::placeholder {
+  color: var(--titlebar-text-secondary);
+  opacity: 1;
+
+}
+
+.titlebar__search-label {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.titlebar__search-shortcut {
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: var(--titlebar-text-muted);
+  font-family:
+    "Segoe UI",
+    system-ui,
+    sans-serif;
+  font-size: 10px;
+}
+
+/* =========================================================
+   WINDOW CONTROLS
+   ========================================================= */
+
+.titlebar__window-controls {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.titlebar__window-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--titlebar-text-secondary);
+  cursor: pointer;
+  transition:
+    background 100ms ease,
+    color 100ms ease;
+}
+
+.titlebar__window-button:hover {
+  background: var(--titlebar-hover);
+  color: var(--titlebar-text);
+}
+
+.titlebar__window-button:focus-visible {
+  outline: 1px solid var(--titlebar-focus);
+  outline-offset: -2px;
+}
+
+/* =========================================================
+   WINDOW CONTROL ICONS
+   ========================================================= */
+
+.titlebar__maximize-icon {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.5;
+}
+
+.titlebar__maximize-icon--maximized {
+  width: 13px;
+  height: 13px;
+}
+
+.titlebar__close-icon {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.6;
+}
+
+/* =========================================================
+   MINIMIZE ICON
+   ========================================================= */
+
+.titlebar__minimize-icon {
+  display: block;
+  margin-top: -4px;
+  color: currentColor;
+  font-family:
+    "Segoe UI",
+    Arial,
+    sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.titlebar__window-button--close:hover {
+  background: var(--titlebar-close);
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .titlebar__search {
+    width: 240px;
+  }
+}
+
+@media (max-width: 700px) {
+  .titlebar__search {
+    width: 200px;
+  }
+
+  .titlebar__search-shortcut {
+    display: none;
+  }
+}
+
+@media (max-width: 550px) {
+  .titlebar__search {
+    width: 42px;
+    justify-content: center;
+  }
+
+  .titlebar__search-input {
+    display: none;
+  }
+
+  .titlebar__search-label {
+    display: none;
+  }
+
+  .titlebar__search-shortcut {
+    display: none;
+  }
+
+  .titlebar__app-name {
+    display: none;
+  }
+
+  .titlebar__brand {
+    padding-left: 10px;
+  }
+}
