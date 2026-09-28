@@ -1,5 +1,5 @@
 import "./App.css";
-import CodeEditor from "./components/CodeEditor/CodeEditor";
+import Workspace from "./components/Workspace/Workspace";
 import SidebarLeft from "./components/SidebarLeft/SidebarLeft";
 import SidebarRight from "./components/SidebarRight/SidebarRight";
 import TitleBar from "./components/TitleBar/TitleBar";
@@ -10,7 +10,7 @@ function App() {
             <TitleBar />
             <div className="app-layout">
                 <SidebarLeft />
-                <CodeEditor />
+                <Workspace />
                 <SidebarRight />
             </div>
         </div>

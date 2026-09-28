@@ -1,5 +1,4 @@
 .code-editor {
-    height: 100%;
     flex: 1;
     background-color: var(--color-surface-raised);
     display: flex;
