@@ -1,0 +1,249 @@
+/* Container Utama */
+.explorerContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Header & Actions */
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.headerTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #858585;
+}
+
+.actionGroup {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.actionButton {
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+}
+
+.actionButton:hover {
+  background-color: #37373d;
+  color: #ffffff;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  color: #71717a;
+}
+
+.emptyText {
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.openFolderButton {
+  padding: 6px 12px;
+  background-color: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.openFolderButton:hover {
+  background-color: #0062a3;
+}
+
+/* Tree Container */
+.treeContainer {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #424242 transparent;
+}
+
+.rootName {
+  font-size: 11px;
+  font-weight: bold;
+  color: #858585;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.treeList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Custom Context Menu */
+.contextMenu {
+  position: fixed;
+  background-color: #252526;
+  border: 1px solid #454545;
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  z-index: 9999;
+  min-width: 190px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #cccccc;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.menuItem:hover {
+  color: #ffffff;
+  background-color: #04395e;
+}
+
+.shortcut {
+  font-size: 10px;
+  color: #858585;
+  margin-left: 12px;
+}
+
+.menuItem:hover .shortcut {
+  color: #cccccc;
+}
+
+.menuIcon {
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+
+.menuDivider {
+  height: 1px;
+  background-color: #454545;
+  margin: 4px 0;
+}
+
+/* Modal Overlays & Box */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modalBox {
+  background-color: #252526;
+  border: 1px solid #454545;
+  border-radius: 6px;
+  padding: 16px;
+  width: 300px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.modalTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cccccc;
+  margin-bottom: 10px;
+}
+
+.modalDescription {
+  font-size: 12px;
+  color: #a1a1aa;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.highlightText {
+  color: #ffffff;
+}
+
+.modalInput {
+  width: 100%;
+  background-color: #3c3c3c;
+  border: 1px solid #007fd4;
+  color: #ffffff;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Modal Buttons */
+.btnBase {
+  border: none;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btnBase:hover {
+  opacity: 0.9;
+}
+
+.btnCancel {
+  background-color: #3a3d41;
+  color: #ffffff;
+}
+
+.btnConfirm {
+  background-color: #0e639c;
+  color: #ffffff;
+}
+
+.btnDelete {
+  background-color: #c53030;
+  color: #ffffff;
+}

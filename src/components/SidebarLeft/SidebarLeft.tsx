@@ -3,11 +3,16 @@ import styles from './SidebarLeft.module.css'
 import MenuIcon from '../MenuIcon/MenuIcon';
 import ExplorerIcon from '../../assets/icons/menu_explorer.svg?react'
 import ExplorerIconActive from '../../assets/icons/menu_explorer_active.svg?react'
+import { Explorer } from './Explorer';
 
-function SidebarLeft() {
+interface SidebarLeftProps {
+  onSelectFile?: (path: string) => void;
+}
+
+function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
 
     /* The current active menu */
-    const [activeMenu, setActiveMenu] = useState<string | null>(null)
+    const [activeMenu, setActiveMenu] = useState<string | null>('explorer');
 
     /* Adjustable sidebar width */
     const [sidebarWidth, setSidebarWidth] = useState(220)
@@ -48,7 +53,7 @@ function SidebarLeft() {
         window.addEventListener("pointerup", handleResizeEnd)
     }
 
-    return (
+        return (
         <div className={styles["sidebar-left"]}>
             {/* List of icons on the left side of the screen */}
             <div className={styles["menu-icons"]}>
@@ -64,13 +69,8 @@ function SidebarLeft() {
             {activeMenu !== null && (
                 <>
                     <div className={styles["menu-expanded"]} style={{ width: sidebarWidth }}>
-
                         {/* File Explorer menu */}
-                        {activeMenu === "explorer" && (
-                            <div>
-                                Explorer
-                            </div>
-                        )}
+                        {activeMenu === 'explorer' && <Explorer onSelectFile={onSelectFile} />}
 
                     </div>
 
