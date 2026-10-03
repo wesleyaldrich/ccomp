@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import styles from "./TitleBar.module.css";
 
 interface TitleBarSearchProps {
   onClick?: () => void;
@@ -15,15 +16,15 @@ export function TitleBarSearch({
 }: TitleBarSearchProps) {
   return (
     <div
-      className="titlebar__search"
+      className={styles.search}
       role="search"
       onClick={onClick}
     >
-      <Search className="titlebar__search-icon" />
+      <Search className={styles.searchIcon} />
 
       <input
         type="text"
-        className="titlebar__search-input"
+        className={styles.searchInput}
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         placeholder={placeholder}

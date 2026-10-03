@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import iconCComp from "../../../src-tauri/icons/logo_ccomp.svg";
-import "./TitleBar.css";
+import styles from "./TitleBar.module.css";
 import { TitleBarSearch } from "./TitleBarSearch";
 import { TitleBarActions } from "./TitleBarActions";
 
@@ -29,46 +29,37 @@ function TitleBar() {
 
   const handleDoubleClick = async (): Promise<void> => {
     await appWindow.toggleMaximize();
-
-    setIsMaximized(
-      await appWindow.isMaximized(),
-    );
+    setIsMaximized(await appWindow.isMaximized());
   };
 
-  const handleSearchClick = (): void => {
-  };
+  const handleSearchClick = (): void => {};
 
   return (
-    <header className="titlebar">
+    <header className={styles.container}>
       <div
-        className="titlebar__content"
+        className={styles.content}
         data-tauri-drag-region
         onDoubleClick={handleDoubleClick}
       >
-        <div className="titlebar__brand">
+        <div className={styles.brand}>
           <img
-            className="titlebar__logo"
+            className={styles.logo}
             src={iconCComp}
             alt="CComp IDE"
             draggable={false}
           />
-
-          <span className="titlebar__app-name">
+          <span className={styles.appName}>
             CComp IDE
           </span>
         </div>
 
-        <TitleBarSearch
-          onClick={handleSearchClick}
-        />
+        <TitleBarSearch onClick={handleSearchClick} />
       </div>
 
       <TitleBarActions
         isMaximized={isMaximized}
         onMaximizeChange={() => {
-          void appWindow
-            .isMaximized()
-            .then(setIsMaximized);
+          void appWindow.isMaximized().then(setIsMaximized);
         }}
       />
     </header>

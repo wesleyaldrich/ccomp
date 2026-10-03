@@ -1,5 +1,6 @@
 import { Square, X } from "lucide-react";
 import { useWindowControls } from "../../hooks/window/useWindowControls";
+import styles from "./TitleBar.module.css";
 
 interface TitleBarActionsProps {
   isMaximized: boolean;
@@ -19,19 +20,19 @@ export function TitleBarActions({
 
   return (
     <div
-      className="titlebar__window-controls"
+      className={styles.windowControls}
       aria-label="Window controls"
     >
       {/* Minimize */}
       <button
         type="button"
-        className="titlebar__window-button"
+        className={styles.windowButton}
         aria-label="Minimize window"
         title="Minimize"
         onClick={minimize}
       >
         <span
-          className="titlebar__minimize-icon"
+          className={styles.minimizeIcon}
           aria-hidden="true"
         >
           −
@@ -41,38 +42,25 @@ export function TitleBarActions({
       {/* Maximize */}
       <button
         type="button"
-        className="titlebar__window-button"
-        aria-label={
-          isMaximized
-            ? "Restore window"
-            : "Maximize window"
-        }
-        title={
-          isMaximized
-            ? "Restore"
-            : "Maximize"
-        }
+        className={styles.windowButton}
+        aria-label={isMaximized ? "Restore window" : "Maximize window"}
+        title={isMaximized ? "Restore" : "Maximize"}
         onClick={handleMaximize}
       >
         <Square
-          className={`titlebar__maximize-icon ${
-            isMaximized ? "titlebar__maximize-icon--maximized" : ""
-          }`}
+          className={`${styles.maximizeIcon} ${isMaximized ? styles.maximizeIconMaximized : ""}`}
         />
       </button>
 
       {/* Close */}
       <button
         type="button"
-        className="
-          titlebar__window-button
-          titlebar__window-button--close
-        "
+        className={`${styles.windowButton} ${styles.windowButtonClose}`}
         aria-label="Close window"
         title="Close"
         onClick={close}
       >
-        <X className="titlebar__close-icon" />
+        <X className={styles.closeIcon} />
       </button>
     </div>
   );
