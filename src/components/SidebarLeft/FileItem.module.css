@@ -1,0 +1,65 @@
+.container {
+  width: 100%;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: #cccccc;
+  font-size: 13px;
+  border-radius: 3px;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.itemRow:hover {
+  background-color: #2a2d2e;
+}
+
+.contentWrapper {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+}
+
+.arrow {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #858585;
+  flex-shrink: 0;
+}
+
+.iconWrapper {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fileName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+.childrenContainer {
+  padding-left: 12px;
+  border-left: 1px solid #3c3c3c;
+  margin-left: 12px;
+  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
