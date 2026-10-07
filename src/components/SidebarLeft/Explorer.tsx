@@ -39,6 +39,7 @@ export function Explorer({ onSelectFile }: ExplorerProps) {
   const [inputName, setInputName] = useState<string>('');
   const [nodeToDelete, setNodeToDelete] = useState<FileNode | null>(null);
   const [nodeToRename, setNodeToRename] = useState<FileNode | null>(null);
+  const [targetFolder, setTargetFolder] = useState<string>('');
 
   const chordActiveRef = useRef<boolean>(false);
   const chordTimeoutRef = useRef<number | null>(null);
@@ -73,11 +74,28 @@ export function Explorer({ onSelectFile }: ExplorerProps) {
   }
 
   /* Buka Modal (yang tampilan buat create) */
-  function openCreateModal(type: 'file' | 'folder') {
-    setContextMenu(null);
-    setInputName('');
-    setModalType(type);
+  // Explorer.tsx
+function openCreateModal(type: 'file' | 'folder', node?: FileNode) {
+  setContextMenu(null);
+  setInputName('');
+
+  if (node) {
+    // Jika item yang diklik kanan adalah FOLDER, simpan path folder tersebut
+    if (node.is_dir) {
+      setTargetFolder(node.path);
+    } else {
+      // Jika item yang diklik kanan adalah FILE, simpan parent folder-nya
+      const separator = node.path.includes('\\') ? '\\' : '/';
+      const parent = node.path.substring(0, node.path.lastIndexOf(separator));
+      setTargetFolder(parent);
+    }
+  } else {
+    // Jika klik di area kosong, buat di root workspace
+    setTargetFolder(workspacePath);
   }
+
+  setModalType(type);
+}
 
   /* Buka Modal (yang tampilan buat hapus) */
   function openDeleteConfirm(node: FileNode) {
@@ -210,30 +228,34 @@ async function handleRenameSubmit() {
 
   
   /* Handle Submit Modal Create file / folder  */
-  async function handleModalSubmit() {
-    if (!inputName.trim() || !workspacePath) return;
+  // Explorer.tsx
+async function handleModalSubmit() {
+  // PENTING: Gunakan targetFolder, jika kosong baru pakai workspacePath
+  const baseDir = targetFolder || workspacePath;
+  if (!inputName.trim() || !baseDir) return;
 
-    const trimmed = inputName.trim();
-    try {
-      if (modalType === 'file') {
-        await invoke('create_workspace_file', {
-          baseDir: workspacePath,
-          relativePath: trimmed,
-        });
-      } else if (modalType === 'folder') {
-        await invoke('create_workspace_folder', {
-          baseDir: workspacePath,
-          relativePath: trimmed,
-        });
-      }
-      await refreshTree();
-    } catch (err) {
-      alert(`Gagal membuat ${modalType}: ${err}`);
-    } finally {
-      setModalType(null);
-      setInputName('');
+  const trimmed = inputName.trim();
+  try {
+    if (modalType === 'file') {
+      await invoke('create_workspace_file', {
+        baseDir: baseDir, // 👈 Kirim path folder target ke Rust
+        relativePath: trimmed,
+      });
+    } else if (modalType === 'folder') {
+      await invoke('create_workspace_folder', {
+        baseDir: baseDir,
+        relativePath: trimmed,
+      });
     }
+    await refreshTree();
+  } catch (err) {
+    alert(`Gagal membuat ${modalType}: ${err}`);
+  } finally {
+    setModalType(null);
+    setInputName('');
+    setTargetFolder(''); // Reset setelah selesai
   }
+}
 
   /* Untuk handle click kanan (dia itung koordinat x dan y) */
   const handleContextMenu = (e: React.MouseEvent, node?: FileNode) => {
@@ -281,7 +303,7 @@ async function handleRenameSubmit() {
         )}
       </div>
 
-      {/* State jika belum ada folder dibuka */}
+      {/* State 1: Jika belum ada folder yang dibuka */}
       {fileTree.length === 0 && !workspacePath ? (
         <div className={styles.emptyState}>
           <p className={styles.emptyText}>No folder opened</p>
@@ -290,18 +312,26 @@ async function handleRenameSubmit() {
           </button>
         </div>
       ) : (
-        /* State saat folder sudah aktif */
-        <div onContextMenu={(e) => handleContextMenu(e)} className={styles.treeContainer}>
+        /* State 2: Saat folder sudah aktif (GANTI BAGIAN DIV INI) */
+        <div 
+          onContextMenu={(e) => {
+            // Hanya tangkap klik kanan jika diklik di area kosong explorer
+            if (e.target === e.currentTarget) {
+              handleContextMenu(e);
+            }
+          }} 
+          className={styles.treeContainer}
+        >
           <div className={styles.rootName}>{rootName}</div>
           <div className={styles.treeList}>
             {fileTree.map((node) => (
-              <div key={node.path} onContextMenu={(e) => handleContextMenu(e, node)}>
-                <FileItem
-                  node={node}
-                  onSelectFile={onSelectFile}
-                  onRefresh={() => refreshTree()}
-                />
-              </div>
+              <FileItem
+                key={node.path}
+                node={node}
+                onSelectFile={onSelectFile}
+                onRefresh={() => refreshTree()}
+                onContextMenu={handleContextMenu} // Pass fungsi ini ke FileItem
+              />
             ))}
           </div>
         </div>
@@ -314,8 +344,16 @@ async function handleRenameSubmit() {
           className={styles.contextMenu}
           style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
         >
-          <ContextMenuItem label="New File..." shortcut="Ctrl+N" onClick={() => openCreateModal('file')} />
-          <ContextMenuItem label="New Folder..." shortcut="Ctrl+Shift+N" onClick={() => openCreateModal('folder')} />
+          <ContextMenuItem
+            label="New File..."
+            shortcut="Ctrl+N"
+            onClick={() => openCreateModal('file', contextMenu.node)} 
+          />
+          <ContextMenuItem
+            label="New Folder..."
+            shortcut="Ctrl+Shift+N"
+            onClick={() => openCreateModal('folder', contextMenu.node)} 
+          />
 
           {contextMenu.node && (
             <>
