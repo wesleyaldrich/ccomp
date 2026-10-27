@@ -1,5 +1,4 @@
 import CodeEditor from '../CodeEditor/CodeEditor';
-import BottomBar from '../BottomBar/BottomBar';
 import styles from './Workspace.module.css';
 
 function Workspace() {
@@ -8,7 +7,6 @@ function Workspace() {
       <div style={{ flex: 1, width: '100%', height: '100%', position: 'relative', minHeight: 0 }}>
         <CodeEditor />
       </div>
-      <BottomBar />
     </div>
   );
 }
