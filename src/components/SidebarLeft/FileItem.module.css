@@ -19,6 +19,25 @@
   background-color: #2a2d2e;
 }
 
+/* ---------- ITEM YANG DIPILIH ---------- */
+
+/* Item yang sedang dipilih / file yang sedang aktif di tab.
+   Ubah warnanya di sini (sekarang biru, sama dengan --color-focus di App.css) */
+.itemRow.selected {
+  background-color: rgba(15, 59, 182, 0.4);
+  color: #ffffff;
+}
+
+.itemRow.selected:hover {
+  background-color: rgba(15, 59, 182, 0.5);
+}
+
+/* Efek "sedang ditekan" saat tombol mouse ditahan */
+.itemRow:active,
+.itemRow.selected:active {
+  background-color: rgba(15, 59, 182, 0.65);
+}
+
 .contentWrapper {
   display: flex;
   align-items: center;

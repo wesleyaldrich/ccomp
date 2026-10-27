@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+use std::io::ErrorKind;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use serde::Serialize;
@@ -63,7 +65,6 @@ pub fn read_workspace_tree(dir_path: String) -> Result<Vec<FileNode>, String> {
         for entry in entries.flatten() {
             let path = entry.path();
             let name = path.file_name().unwrap_or_default().to_string_lossy().into_owned();
-            if name.starts_with('.') { continue; }
 
             let is_dir = path.is_dir();
             let mut children = None;
@@ -93,7 +94,10 @@ pub fn read_workspace_tree(dir_path: String) -> Result<Vec<FileNode>, String> {
 */
 #[tauri::command]
 pub fn read_file_content(file_path: String) -> Result<String, String> {
-    fs::read_to_string(&file_path).map_err(|e| format!("Gagal membaca file: {}", e))
+    let bytes = fs::read(&file_path).map_err(|e| format!("Gagal membaca file: {}", e))?;
+    String::from_utf8(bytes).map_err(|_| {
+        "File ini bukan teks UTF-8 (kemungkinan file biner), jadi tidak bisa dibuka di editor".to_string()
+    })
 }
 
 /* Save isi file (belum dipake harusnya)
@@ -117,7 +121,20 @@ pub fn create_workspace_file(base_dir: String, relative_path: String) -> Result<
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    fs::write(&target, "").map_err(|e| format!("Gagal membuat file: {}", e))?;
+
+    // create_new = gagal kalau file sudah ada (tidak menimpa / mengosongkan file lama)
+    OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&target)
+        .map_err(|e| {
+            if e.kind() == ErrorKind::AlreadyExists {
+                "File dengan nama itu sudah ada".to_string()
+            } else {
+                format!("Gagal membuat file: {}", e)
+            }
+        })?;
+
     Ok(target.to_string_lossy().into_owned())
 }
 

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { VscNewFile, VscNewFolder, VscRefresh, VscTrash } from 'react-icons/vsc';
+import { load } from '@tauri-apps/plugin-store'
+import { VscNewFile, VscNewFolder, VscRefresh, VscTrash, VscFolderOpened } from 'react-icons/vsc';
 import { FileItem } from './FileItem';
+import { closeTabsForPath, handlePathRenamed, requestEditorFocus } from '../CodeEditor/fileActions';
 import styles from './Explorer.module.css';
 
 /* Initialize beberapa interface yang dipake */
@@ -25,12 +27,15 @@ interface ContextMenuState {
 
 type ModalType = 'file' | 'folder' | 'rename' | 'delete' | null;
 
+const STORE_FILE = 'ccomp_explorer.json';
+
 export function Explorer({ onSelectFile }: ExplorerProps) {
   /* Simpan path folder yang lagi dibuka */
   const [workspacePath, setWorkspacePath] = useState<string>('');
   /* Simpan hierarki folder dan file  */
   const [fileTree, setFileTree] = useState<FileNode[]>([]);
-  
+  /* penanda data udah siap di load */
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   /* Simpan posisi (x,y) dari kursor pas klik kanan */
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
@@ -46,10 +51,52 @@ export function Explorer({ onSelectFile }: ExplorerProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const modalInputRef = useRef<HTMLInputElement>(null);
 
+  // 1. PERSISTENCE: Memuat workspacePath terakhir saat komponen di-mount
+  useEffect(() => {
+    async function loadSavedWorkspace() {
+      try {
+        const store = await load(STORE_FILE, { autoSave: false });
+        const savedPath = await store.get<string>('workspacePath');
+
+        if (savedPath) {
+          setWorkspacePath(savedPath);
+          // Muat ulang struktur folder dari disk lokal
+          const data = await invoke<FileNode[]>('read_workspace_tree', { dirPath: savedPath });
+          setFileTree(data);
+        }
+      } catch (err) {
+        console.error('Gagal memuat state workspace dari store:', err);
+      } finally {
+        setIsLoaded(true);
+      }
+    }
+
+    void loadSavedWorkspace();
+  }, []);
+
+  // 2. PERSISTENCE: Menyimpan workspacePath ke disk setiap kali workspacePath berubah
+  useEffect(() => {
+    async function saveWorkspace() {
+      if (!isLoaded) return;
+      try {
+        const store = await load(STORE_FILE, { autoSave: false });
+        await store.set('workspacePath', workspacePath);
+        await store.save();
+      } catch (err) {
+        console.error('Gagal menyimpan workspacePath ke store:', err);
+      }
+    }
+
+    void saveWorkspace();
+  }, [workspacePath, isLoaded]);
+
   /* Auto-focus pas modal crate file / folder muncul (jadi gelap belakangnya*/
   useEffect(() => {
-    if (modalType === 'file' || modalType === 'folder') {
-      setTimeout(() => modalInputRef.current?.focus(), 50);
+    if (modalType === 'file' || modalType === 'folder' || modalType === 'rename') {
+      setTimeout(() => {
+        modalInputRef.current?.focus();
+        modalInputRef.current?.select();
+      }, 50);
     }
   }, [modalType]);
 
@@ -63,6 +110,15 @@ export function Explorer({ onSelectFile }: ExplorerProps) {
       console.error('Gagal memuat folder workspace:', err);
     }
   }
+
+    /* Refresh otomatis kalau ada file baru dari luar Explorer (mis. hasil Save As) */
+  useEffect(() => {
+    function handleFsChanged() {
+      void refreshTree();
+    }
+    window.addEventListener('ccomp:fs-changed', handleFsChanged);
+    return () => window.removeEventListener('ccomp:fs-changed', handleFsChanged);
+  }, [workspacePath]);
 
   /* Buka workspace yang dituju */
   async function handleOpenWorkspace() {
@@ -105,11 +161,12 @@ function openCreateModal(type: 'file' | 'folder', node?: FileNode) {
   }
 
   /* Hapus file / folder pake delete_workspace_item */
-  async function handleDeleteSubmit() {
+    async function handleDeleteSubmit() {
     if (!nodeToDelete) return;
 
     try {
       await invoke('delete_workspace_item', { targetPath: nodeToDelete.path });
+      closeTabsForPath(nodeToDelete.path); // tutup tab file yang ikut terhapus
       await refreshTree();
     } catch (err) {
       alert(`Gagal menghapus item: ${err}`);
@@ -143,6 +200,7 @@ async function handleRenameSubmit() {
       oldPath: nodeToRename.path,
       newPath: newPath,
     });
+    handlePathRenamed(nodeToRename.path, newPath); // update path & nama tab yang terbuka
     await refreshTree();
   } catch (err) {
     alert(`Gagal mengubah nama: ${err}`);
@@ -236,11 +294,18 @@ async function handleModalSubmit() {
 
   const trimmed = inputName.trim();
   try {
+    let createdFilePath: string | null = null;
+
     if (modalType === 'file') {
       await invoke('create_workspace_file', {
         baseDir: baseDir, // 👈 Kirim path folder target ke Rust
         relativePath: trimmed,
       });
+
+      // Susun path file baru sendiri (bukan dari hasil Rust, karena di Windows
+      // hasilnya berawalan \\?\ sehingga tidak cocok dengan path di Explorer)
+      const sep = baseDir.includes('\\') ? '\\' : '/';
+      createdFilePath = `${baseDir.replace(/[/\\]+$/, '')}${sep}${trimmed.replace(/[/\\]+/g, sep)}`;
     } else if (modalType === 'folder') {
       await invoke('create_workspace_folder', {
         baseDir: baseDir,
@@ -248,6 +313,12 @@ async function handleModalSubmit() {
       });
     }
     await refreshTree();
+
+    // File baru langsung dibuka di editor dan kursor siap mengetik
+    if (createdFilePath) {
+      requestEditorFocus(createdFilePath);
+      onSelectFile?.(createdFilePath);
+    }
   } catch (err) {
     alert(`Gagal membuat ${modalType}: ${err}`);
   } finally {
@@ -281,7 +352,7 @@ async function handleModalSubmit() {
   return (
     <div className={styles.explorerContainer}>
       {/* Header bar Explorer & Action Buttons */}
-      <div className={styles.headerBar}>
+      {/* <div className={styles.headerBar}>
         <span className={styles.headerTitle}>Explorer</span>
         {workspacePath && (
           <div className={styles.actionGroup}>
@@ -292,6 +363,41 @@ async function handleModalSubmit() {
             >
               <VscNewFile size={15} />
             </button>
+            <button
+              onClick={() => openCreateModal('folder')}
+              title="New Folder (Ctrl+Shift+N)"
+              className={styles.actionButton}
+            >
+              <VscNewFolder size={15} />
+            </button>
+          </div>
+        )}
+      </div> */}
+
+      {/* Header bar Explorer & Action Buttons */}
+      <div className={styles.headerBar}>
+        <span className={styles.headerTitle}>Explorer</span>
+        {workspacePath && (
+          <div className={styles.actionGroup}>
+            {/* 1. Tombol Buka / Ganti Folder (Open Workspace) */}
+            <button
+              onClick={handleOpenWorkspace}
+              title="Open Folder (Ctrl+K, O)"
+              className={styles.actionButton}
+            >
+              <VscFolderOpened size={15} />
+            </button>
+
+            {/* 2. Tombol New File */}
+            <button
+              onClick={() => openCreateModal('file')}
+              title="New File (Ctrl+N)"
+              className={styles.actionButton}
+            >
+              <VscNewFile size={15} />
+            </button>
+
+            {/* 3. Tombol New Folder */}
             <button
               onClick={() => openCreateModal('folder')}
               title="New Folder (Ctrl+Shift+N)"

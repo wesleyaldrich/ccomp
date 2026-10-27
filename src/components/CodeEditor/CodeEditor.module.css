@@ -15,3 +15,37 @@
     flex: 1;
     background-color: var(--color-surface);
 }
+
+/* ---------- TAB ---------- */
+
+/* Batas lebar tab: ubah angka 180px kalau mau lebih lebar / sempit */
+.code-editor :global(.flexlayout__tab_button_content) {
+    max-width: 180px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.tabLabelWrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Nama file kepanjangan -> dipotong jadi "nama_file_pan..." */
+.tabLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Titik penanda "belum disimpan" */
+.dirtyDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-text-secondary);
+    flex-shrink: 0;
+}

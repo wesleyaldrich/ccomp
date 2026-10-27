@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { VscChevronDown, VscChevronRight } from 'react-icons/vsc';
 import { FileNode } from './Explorer';
 import { FileIcon } from './FileIcon';
+import { useTabStore } from '../CodeEditor/useTabStore';
+import { samePath } from '../CodeEditor/pathUtils';
 import styles from './FileItem.module.css';
 
 interface FileItemProps {
@@ -11,21 +13,38 @@ interface FileItemProps {
   onContextMenu?: (e: React.MouseEvent, node: FileNode) => void;
 }
 
-// FileItem.tsx
 export function FileItem({ node, onSelectFile, onRefresh, onContextMenu }: FileItemProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Item ini sedang dipilih / sedang jadi tab aktif?
+  const isSelected = useTabStore(
+    (s) => s.selectedPath !== null && samePath(s.selectedPath, node.path)
+  );
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    useTabStore.getState().setSelectedPath(node.path);
+
+    if (node.is_dir) {
+      setIsOpen((prev) => !prev);
+    } else {
+      onSelectFile?.(node.path);
+    }
+  };
 
   return (
     <div className={styles.container}>
       <div
-        className={styles.itemRow}
-        onClick={() => (node.is_dir ? setIsOpen(!isOpen) : onSelectFile?.(node.path))}
+        className={`${styles.itemRow} ${isSelected ? styles.selected : ''}`}
+        onClick={handleClick}
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          
+
+          useTabStore.getState().setSelectedPath(node.path);
+
           if (node.is_dir) {
-            setIsOpen(true); // 👈 OTOMATIS BUKA FOLDER saat diklik kanan!
+            setIsOpen(true); // Otomatis buka folder saat diklik kanan
           }
 
           onContextMenu?.(e, node);
@@ -46,6 +65,7 @@ export function FileItem({ node, onSelectFile, onRefresh, onContextMenu }: FileI
         </div>
       </div>
 
+      {/* Render rekursif untuk folder */}
       {node.is_dir && isOpen && node.children && (
         <div className={styles.childrenContainer}>
           {node.children.map((childNode) => (
