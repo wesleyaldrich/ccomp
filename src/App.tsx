@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import 'flexlayout-react/style/dark.css';
 import "./App.css";
 import Workspace from "./components/Workspace/Workspace";
