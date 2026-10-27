@@ -1,5 +1,5 @@
-import BottomBar from '../BottomBar/BottomBar';
 import CodeEditor from '../CodeEditor/CodeEditor';
+import BottomBar from '../BottomBar/BottomBar';
 import styles from './Workspace.module.css';
 
 function Workspace() {

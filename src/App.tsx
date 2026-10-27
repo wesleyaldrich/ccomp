@@ -4,6 +4,7 @@ import Workspace from "./components/Workspace/Workspace";
 import SidebarLeft from "./components/SidebarLeft/SidebarLeft";
 import SidebarRight from "./components/SidebarRight/SidebarRight";
 import TitleBar from "./components/TitleBar/TitleBar";
+import BottomBar from "./components/BottomBar/BottomBar";
 import { useRestoreSession } from './hooks/session/useRestoreSession';
 import { openFileFromDisk } from './components/CodeEditor/fileActions';
 
@@ -17,6 +18,7 @@ function App() {
         <SidebarLeft onSelectFile={openFileFromDisk} />
         <Workspace />
         <SidebarRight />
+        <BottomBar />
       </div>
     </div>
   );

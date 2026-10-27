@@ -3,7 +3,7 @@ import { Minus, Play, Plus, X } from 'lucide-react';
 import { load } from '@tauri-apps/plugin-store'; 
 import styles from './TestCasePanel.module.css';
 
-interface TestCase {
+export interface TestCase {
     id: string;
     input: string;
     expectedOutput: string;
@@ -65,6 +65,21 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
 
     function deleteTestCase(id: string) {
         setTestCases(prev => prev.filter(tc => tc.id !== id));
+        window.dispatchEvent(new CustomEvent('onDeleteTestCase', { detail: { id } }));
+    }
+
+    // Run 1 test case
+    function runSingleTest(tc: TestCase, index: number) {
+        window.dispatchEvent(new CustomEvent('onRunSingleTest', { 
+            detail: { testCase: tc, name: `Test Case ${index + 1}` } 
+        }));
+    }
+
+    // Run all test case
+    function runAllTests() {
+        window.dispatchEvent(new CustomEvent('onRunAllTests', { 
+            detail: { testCases } 
+        }));
     }
 
     return (
@@ -80,18 +95,20 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
             {/* Sub Header */}
             <div className={styles.subHeader}>
                 <span className={styles.subTitle}>Test Cases</span>
-                <button className={styles.runAllBtn}>
+                <button className={styles.runAllBtn} onClick={runAllTests}>
                     <Play size={13} strokeWidth={2.5} /> Run All
                 </button>
             </div>
 
             {/* Column Labels */}
-            <div className={styles.labelsRow}>
-                <span className={styles.labelNum}></span>
-                <span className={styles.labelText}>Input</span>
-                <span className={styles.labelText}>Expected Output</span>
-                <span className={styles.labelAction}></span>
-            </div>
+            {testCases.length > 0 && (
+                <div className={styles.labelsRow}>
+                    <span className={styles.labelNum}></span>
+                    <span className={styles.labelText}>Input</span>
+                    <span className={styles.labelText}>Expected Output</span>
+                    <span className={styles.labelAction}></span>
+                </div>
+            )}
 
             {/* Test Cases List */}
             <div className={styles.list}>
@@ -114,7 +131,11 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
                         />
                         
                         <div className={styles.actionButtons}>
-                            <button className={styles.runBtn} title="Run Test Case">
+                            <button 
+                                className={styles.runBtn} 
+                                title="Run Test Case"
+                                onClick={() => runSingleTest(tc, index)}
+                            >
                                 <Play size={16} strokeWidth={2} />
                             </button>
                             
