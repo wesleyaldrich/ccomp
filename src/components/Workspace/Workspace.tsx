@@ -1,12 +1,14 @@
 import CodeEditor from '../CodeEditor/CodeEditor';
-import styles from './Workspace.module.css'
+import styles from './Workspace.module.css';
 
 function Workspace() {
-    return (
-        <div className={styles["workspace"]}>
-            <CodeEditor />
-        </div>
-    )
+  return (
+    <div className={styles.workspace} style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, width: '100%', height: '100%', position: 'relative', minHeight: 0 }}>
+        <CodeEditor />
+      </div>
+    </div>
+  );
 }
 
 export default Workspace;
