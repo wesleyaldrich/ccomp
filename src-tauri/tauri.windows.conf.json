@@ -1,0 +1,7 @@
+{
+  "bundle": {
+    "resources": [
+      "toolchains/windows-x86_64/mingw64/"
+    ]
+  }
+}

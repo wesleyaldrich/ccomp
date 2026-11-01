@@ -2,10 +2,13 @@ import { useCallback, useEffect } from 'react';
 import {
   Layout,
   TabNode,
+  TabSetNode,
+  BorderNode,
   Actions,
   Action,
   Model,
   ITabRenderValues,
+  ITabSetRenderValues,
 } from 'flexlayout-react';
 import Editor from '@monaco-editor/react';
 import { flexlayoutModel } from './model';
@@ -13,6 +16,7 @@ import { isDirty, useTabStore } from './useTabStore';
 import { confirmCloseDirtyTab, consumeEditorFocusRequest, saveFile } from './fileActions';
 import { schedulePersist } from './session';
 import styles from './CodeEditor.module.css';
+import { invoke } from '@tauri-apps/api/core';
 
 // Isi tab: subscribe ke store sendiri, jadi mengetik tidak me-render ulang Layout
 function EditorTab({ fileId }: { fileId: string }) {
@@ -78,6 +82,24 @@ export default function CodeEditor() {
     values.content = <TabLabel fileId={node.getId()} fallback={node.getName()} />;
   }, []);
 
+  const handleRenderTabSet = useCallback((
+    node: TabSetNode | BorderNode,
+    renderValues: ITabSetRenderValues
+  ) => {
+    console.log('TABSET CALLBACK FIRED', node.getId());
+    console.log('Render values:', renderValues);
+
+    renderValues.buttons.push(
+      <button
+        key="run"
+        className={styles.runButton}
+        onClick={handleRun}
+      >
+        Run
+      </button>
+          );
+  }, []);
+
   const handleAction = useCallback((action: Action) => {
     if (action.type === Actions.DELETE_TAB) {
       const id = action.data.node as string;
@@ -99,6 +121,33 @@ export default function CodeEditor() {
     schedulePersist();
   }, []);
 
+  const handleRun = async () => {
+    const { activeFileId, openFiles } = useTabStore.getState();
+
+    if (!activeFileId) {
+      console.log('No active file.');
+      return;
+    }
+
+    const file = openFiles.get(activeFileId);
+
+    if (!file) {
+      console.log('Active file not found.');
+      return;
+    }
+
+    if (!file.path) {
+      console.log('Please save the file before running.');
+      return;
+    }
+
+    const result = await invoke<string>('run_code', {
+      filePath: file.path,
+    });
+
+    console.log(result);
+  };
+
   // Ctrl+S saat fokus tidak di dalam editor (misalnya habis klik file di Explorer)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -117,6 +166,9 @@ export default function CodeEditor() {
       className={styles['code-editor']}
       style={{ height: '100%', width: '100%', position: 'relative' }}
     >
+      <div className={styles['menu-top']}>
+      </div>
+ 
       <div
         className={styles['menu-tabs']}
         style={{ position: 'relative', width: '100%', height: '100%', minHeight: 0 }}
@@ -126,6 +178,7 @@ export default function CodeEditor() {
             model={flexlayoutModel}
             factory={factory}
             onRenderTab={handleRenderTab}
+            onRenderTabSet={handleRenderTabSet}
             onAction={handleAction}
             onModelChange={handleModelChange}
           />

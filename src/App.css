@@ -43,6 +43,10 @@
 
   /* Global Sizes */
   --size-gap: 1px;
+
+  /* Run Button */
+  --color-btn-run-bg: rgb(23, 42, 37);
+  --color-btn-run-text: rgb(110, 199, 123);
 }
 
 /* Reset default margin & kunci viewport agar FlexLayout bisa kalkulasi pixel nyata */
