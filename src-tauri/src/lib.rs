@@ -2,6 +2,7 @@
 
 /* import fs_commands -> beriwsi logic command" file system */
 mod fs_commands;
+mod search_commands;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -21,7 +22,9 @@ pub fn run() {
             fs_commands::rename_workspace_item,
             fs_commands::create_workspace_folder,
             fs_commands::read_file_content,
-            fs_commands::save_file_content
+            fs_commands::save_file_content,
+            search_commands::search_in_files,
+            search_commands::replace_in_file,
             ])
 
         .run(tauri::generate_context!())

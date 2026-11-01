@@ -49,3 +49,9 @@
     background-color: var(--color-text-secondary);
     flex-shrink: 0;
 }
+
+/* Warna kustom highlight search */
+:global(.vscode-search-highlight-editor) {
+  background-color: rgba(228, 127, 44, 0.4);
+  border-radius: 2px;
+}

@@ -1,0 +1,356 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+}
+
+.header {
+  padding: 10px 16px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.inputContainer {
+  padding: 8px 16px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 6px 8px;
+  border-radius: 2px;
+  font-size: 13px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-focus);
+}
+
+.advancedInputs {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  padding-left: 16px; 
+}
+
+.inputLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.ellipsisToggle {
+  display: flex;
+  justify-content: flex-end;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.ellipsisToggle:hover {
+  color: var(--color-text-primary);
+}
+
+.resultsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.statusText {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.resultSummary {
+  padding: 0px 16px 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.resultList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.fileGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.fileHeader {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.fileHeader:hover {
+  background-color: var(--color-active);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  color: var(--color-text-muted);
+}
+
+.fileIcon {
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  width: 16px;
+  height: 16px;
+}
+
+.fileName {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.filePath {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matchItem {
+  display: flex;
+  padding: 2px 16px 2px 42px; /* Indentasi agar sejajar dengan nama file (melewati chevron & ikon) */
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-family: var(--font-primary);
+}
+
+.matchItem:hover {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+}
+
+.matchText {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.highlight {
+  background-color: rgba(228, 127, 44, 0.4); /* Warna oranye kecoklatan standar VS Code Dark Theme */
+  border-radius: 2px;
+  color: var(--color-text-primary);
+}
+
+/* Konsisten Scrollbar */
+.resultList::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+.resultList::-webkit-scrollbar-track {
+  background: transparent;
+}
+.resultList::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-muted);
+  border-radius: 10px;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 4px;
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.expandReplaceBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 2px 0 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.expandReplaceBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 5px 65px 5px 8px; /* Ruang untuk tombol opsi di sebelah kanan */
+  border-radius: 2px;
+  font-size: 13px;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-focus);
+}
+
+.searchOptions {
+  position: absolute;
+  right: 4px;
+  display: flex;
+  gap: 2px;
+}
+
+.optionBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optionBtn:hover {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+}
+
+.optionBtn.active {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-focus);
+}
+
+.optionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.replaceContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.replaceActionRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-left: 20px;
+}
+
+.replaceActionBtn {
+  background-color: var(--color-surface-raised, #3c3c3c);
+  border: 1px solid var(--color-border, #454545);
+  color: var(--color-text-primary, #cccccc);
+  padding: 3px 10px;
+  border-radius: 2px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.replaceActionBtn:hover:not(:disabled) {
+  background-color: var(--color-active, #007acc);
+  color: #ffffff;
+  border-color: var(--color-focus, #007acc);
+}
+
+.replaceActionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.externalActionWrapper {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover:not(:disabled) {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

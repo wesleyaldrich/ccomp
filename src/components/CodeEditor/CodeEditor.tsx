@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   Layout,
   TabNode,
@@ -18,6 +18,54 @@ import styles from './CodeEditor.module.css';
 function EditorTab({ fileId }: { fileId: string }) {
   const file = useTabStore((s) => s.openFiles.get(fileId));
   const updateContent = useTabStore((s) => s.updateContent);
+  
+  const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+  
+  // State untuk melacak highlight di dalam editor
+  const decorationIdsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    if (!file) return;
+
+    const applyHighlight = (path: string, line: number, word: string) => {
+      if (path !== file.path || !editorRef.current || !monacoRef.current) return;
+      const editor = editorRef.current;
+      const monaco = monacoRef.current;
+
+      editor.revealLineInCenter(line);
+
+      const model = editor.getModel();
+      if (model) {
+        const text = model.getLineContent(line);
+        const col = text.toLowerCase().indexOf(word.toLowerCase()) + 1;
+        
+        if (col > 0) {
+          // Terapkan warna kustom dari CSS, bukan selection standar biru
+          decorationIdsRef.current = editor.deltaDecorations(decorationIdsRef.current, [
+            {
+              range: new monaco.Range(line, col, line, col + word.length),
+              options: { inlineClassName: 'vscode-search-highlight-editor' }
+            }
+          ]);
+          // Letakkan kursor tepat di sebelah kata
+          editor.setPosition({ lineNumber: line, column: col });
+        } else {
+          editor.setPosition({ lineNumber: line, column: 1 });
+        }
+      }
+      editor.focus();
+    };
+
+    const handleSearchEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { path, line, word } = customEvent.detail;
+      applyHighlight(path, line, word);
+    };
+
+    window.addEventListener('ccomp:search-goto', handleSearchEvent);
+    return () => window.removeEventListener('ccomp:search-goto', handleSearchEvent);
+  }, [file?.path]);
 
   if (!file) {
     return <div style={{ color: '#aaa', padding: 16 }}>Memuat file...</div>;
@@ -31,9 +79,44 @@ function EditorTab({ fileId }: { fileId: string }) {
       language={file.language}
       value={file.content}
       onChange={(value) => updateContent(file.id, value ?? '')}
-            onMount={(editor, monaco) => {
+      onMount={(editor, monaco) => {
         // File yang baru dibuat dari Explorer: langsung fokus supaya bisa diketik
         if (consumeEditorFocusRequest(file.path)) editor.focus();
+
+        const pending = (window as any).__pendingSearchJump;
+        if (pending && pending.path === file.path) {
+          setTimeout(() => {
+            editor.revealLineInCenter(pending.line);
+            const model = editor.getModel();
+            if (model) {
+              const text = model.getLineContent(pending.line);
+              const col = text.toLowerCase().indexOf(pending.word.toLowerCase()) + 1;
+              if (col > 0) {
+                decorationIdsRef.current = editor.deltaDecorations(decorationIdsRef.current, [
+                  {
+                    range: new monaco.Range(pending.line, col, pending.line, col + pending.word.length),
+                    options: { inlineClassName: 'vscode-search-highlight-editor' }
+                  }
+                ]);
+                editor.setPosition({ lineNumber: pending.line, column: col });
+              } else {
+                editor.setPosition({ lineNumber: pending.line, column: 1 });
+              }
+            }
+            editor.focus();
+            ;(window as any).__pendingSearchJump = null;
+          }, 50);
+        }
+
+        // Hapus highlight oranye saat user mengeklik tempat lain atau memindahkan panah keyboard
+        editor.onDidChangeCursorPosition((e: any) => {
+          if (
+            decorationIdsRef.current.length > 0 && 
+            e.reason === monaco.editor.CursorChangeReason.Explicit
+          ) {
+            decorationIdsRef.current = editor.deltaDecorations(decorationIdsRef.current, []);
+          }
+        });
 
         // Ctrl+S saat kursor berada di dalam editor
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
