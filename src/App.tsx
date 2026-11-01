@@ -11,9 +11,13 @@ function App() {
             <TitleBar />
             <div className="app-layout">
                 <SidebarLeft />
-                <Workspace />
-                <SidebarRight />
-                <BottomBar />
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                        <Workspace />
+                        <SidebarRight />
+                    </div>
+                    <BottomBar />
+                </div>
             </div>
         </div>
     );

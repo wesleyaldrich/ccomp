@@ -81,7 +81,7 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                 </div>
 
                 {/* Bottom Menu */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto', marginBottom: '40px' }}>
                     <MenuIcon
                         icon={<TestResultIcon />}
                         iconActive={<TestResultIconActive />}
