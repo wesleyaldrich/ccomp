@@ -3,6 +3,7 @@
 /* import fs_commands -> beriwsi logic command" file system */
 mod fs_commands;
 mod run_commands;
+mod search_commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -19,6 +20,8 @@ pub fn run() {
             fs_commands::read_file_content,
             fs_commands::save_file_content,
             run_commands::run_code,
+            search_commands::search_in_files,
+            search_commands::replace_in_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -4,6 +4,7 @@
   height: 100%;
   color: var(--color-text-primary);
   background-color: var(--color-surface);
+  border-left: 1px solid var(--color-border);
 }
 
 /* Main Header */

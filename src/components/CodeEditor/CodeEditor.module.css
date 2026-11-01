@@ -58,3 +58,8 @@
     border-radius: 4px;
     cursor: pointer;
 }
+
+:global(.vscode-search-highlight-editor) {
+  background-color: rgba(228, 127, 44, 0.4);
+  border-radius: 2px;
+}

@@ -3,9 +3,12 @@ import styles from './SidebarLeft.module.css';
 import MenuIcon from '../MenuIcon/MenuIcon';
 import ExplorerIcon from '../../assets/icons/menu_explorer.svg?react';
 import ExplorerIconActive from '../../assets/icons/menu_explorer_active.svg?react';
+import SearchIcon from '../../assets/icons/menu_search.svg?react';
+import SearchIconActive from '../../assets/icons/menu_search_active.svg?react';
 import TestResultIcon from '../../assets/icons/menu_test_result.svg?react';
 import TestResultIconActive from '../../assets/icons/menu_test_result_active.svg?react';
 import { Explorer } from './Explorer';
+import { GlobalSearch } from './GlobalSearch';
 
 interface SidebarLeftProps {
   onSelectFile?: (path: string) => void;
@@ -78,10 +81,16 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                         active={activeMenu === "explorer"}
                         onClick={() => toggleMenu("explorer")}
                     />
+                    <MenuIcon
+                        icon={<SearchIcon />}
+                        iconActive={<SearchIconActive />}
+                        active={activeMenu === "search"}
+                        onClick={() => toggleMenu("search")}
+                    />
                 </div>
 
                 {/* Bottom Menu */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto', marginBottom: '40px' }}>
                     <MenuIcon
                         icon={<TestResultIcon />}
                         iconActive={<TestResultIconActive />}
@@ -98,7 +107,7 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                     <div className={styles["menu-expanded"]} style={{ width: sidebarWidth }}>
                         {/* File Explorer menu */}
                         {activeMenu === 'explorer' && <Explorer onSelectFile={onSelectFile} />}
-                    
+                        {activeMenu === 'search' && <GlobalSearch onSelectFile={onSelectFile} />}
                     </div>
 
                     {/* Sidebar resize handler */}

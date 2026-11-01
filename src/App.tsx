@@ -9,19 +9,22 @@ import { useRestoreSession } from './hooks/session/useRestoreSession';
 import { openFileFromDisk } from './components/CodeEditor/fileActions';
 
 function App() {
-  useRestoreSession();
-
-  return (
-    <div className="app-container">
-      <TitleBar />
-      <div className="app-layout">
-        <SidebarLeft onSelectFile={openFileFromDisk} />
-        <Workspace />
-        <SidebarRight />
-        <BottomBar />
-      </div>
-    </div>
-  );
+    useRestoreSession();
+    return (
+        <div className="app-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+            <TitleBar />
+            <div className="app-layout" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                <SidebarLeft onSelectFile={openFileFromDisk} />
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                        <Workspace />
+                        <SidebarRight />
+                    </div>
+                    <BottomBar />
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default App;
