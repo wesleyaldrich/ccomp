@@ -22,22 +22,15 @@ pub fn run_code(app: AppHandle, file_path: String) -> Result<String, String> {
 
     let relative_gcc_path = "toolchains/windows-x86_64/mingw64/bin/gcc.exe";
 
-    let resolved_path = app
-        .path()
-        .resolve(relative_gcc_path, BaseDirectory::Resource)
-        .map_err(|e| format!("Failed to resolve GCC path: {}", e))?;
-
-    let gcc_path = if resolved_path.is_file() {
-        resolved_path
-    } else if cfg!(debug_assertions) {
-        // Development: use the toolchain directly from src-tauri/
+    let gcc_path = if cfg!(debug_assertions) {
+        // Development: use the original toolchain inside src-tauri/
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join(relative_gcc_path)
     } else {
-        return Err(format!(
-            "Bundled GCC not found: {}",
-            resolved_path.display()
-        ));
+        // Production: use the bundled application resource
+        app.path()
+            .resolve(relative_gcc_path, BaseDirectory::Resource)
+            .map_err(|e| format!("Failed to resolve GCC path: {}", e))?
     };
 
     if !gcc_path.is_file() {
@@ -57,6 +50,12 @@ pub fn run_code(app: AppHandle, file_path: String) -> Result<String, String> {
 
     let existing_path = std::env::var("PATH").unwrap_or_default();
     let compiler_path = format!("{};{}", bin_dir.display(), existing_path);
+
+    println!("GCC path: {}", gcc_path.display());
+    println!("GCC bin: {}", bin_dir.display());
+    println!("PATH: {}", compiler_path);
+    println!("GCC_EXEC_PREFIX: {:?}", std::env::var("GCC_EXEC_PREFIX"));
+    println!("COMPILER_PATH: {:?}", std::env::var("COMPILER_PATH"));
 
     // Compile
     let output = Command::new(&gcc_path)
