@@ -1,7 +1,9 @@
 use std::path::Path;
 use std::process::Command;
+use std::os::windows::process::CommandExt;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
+
 
 #[tauri::command]
 pub fn run_code(app: AppHandle, file_path: String) -> Result<String, String> {
@@ -51,12 +53,6 @@ pub fn run_code(app: AppHandle, file_path: String) -> Result<String, String> {
     let existing_path = std::env::var("PATH").unwrap_or_default();
     let compiler_path = format!("{};{}", bin_dir.display(), existing_path);
 
-    println!("GCC path: {}", gcc_path.display());
-    println!("GCC bin: {}", bin_dir.display());
-    println!("PATH: {}", compiler_path);
-    println!("GCC_EXEC_PREFIX: {:?}", std::env::var("GCC_EXEC_PREFIX"));
-    println!("COMPILER_PATH: {:?}", std::env::var("COMPILER_PATH"));
-
     // Compile
     let output = Command::new(&gcc_path)
         .arg(&file_path)
@@ -73,6 +69,17 @@ pub fn run_code(app: AppHandle, file_path: String) -> Result<String, String> {
     if !output.status.success() {
         return Err(String::from_utf8_lossy(&output.stderr).to_string());
     }
+
+    // Launch the compiled executable in a new CMD window
+    const CREATE_NEW_CONSOLE: u32 = 0x00000010;
+
+    Command::new("cmd.exe")
+        .arg("/K")
+        .arg(&executable)
+        .current_dir(source.parent().unwrap_or(Path::new(".")))
+        .creation_flags(CREATE_NEW_CONSOLE)
+        .spawn()
+        .map_err(|e| format!("Failed to launch executable: {}", e))?;
 
     Ok(format!(
         "Compilation successful: {}",
