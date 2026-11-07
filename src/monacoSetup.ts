@@ -41,9 +41,12 @@ monaco.editor.defineTheme('ccomp-dark', {
 
   // Warna elemen editor (latar, nomor baris, seleksi, kursor, dll). Format: '#RRGGBB'
   colors: {
-    'editor.background': '#171E26',
+    'editor.background': '#131921',
+    'editorGutter.background': '#131921',
+    'minimap.background': '#131921',
+    // 'editor.background': '#171E26',
     'editor.foreground': '#E6EDF3',
-    'editorGutter.background': '#171E26',
+    // 'editorGutter.background': '#171E26',
     'editorLineNumber.foreground': '#687482',
     'editorLineNumber.activeForeground': '#9DA7B3',
     'editor.lineHighlightBackground': '#1A232C',
@@ -58,6 +61,6 @@ monaco.editor.defineTheme('ccomp-dark', {
     'scrollbarSlider.background': '#68748255',
     'scrollbarSlider.hoverBackground': '#68748288',
     'scrollbarSlider.activeBackground': '#687482AA',
-    'minimap.background': '#171E26',
+    // 'minimap.background': '#171E26',
   },
 });

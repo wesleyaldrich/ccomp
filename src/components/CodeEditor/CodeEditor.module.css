@@ -1,53 +1,198 @@
 .code-editor {
-    flex: 1;
-    background-color: var(--color-surface-raised);
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-gap);
+  /* Warna */
+  --editor-tab-surface: #131921;
+  --editor-tab-strip: #171E26;
+  --editor-tab-border: #252D35;
+
+  /* Ubah satu nilai ini untuk mengatur lebar semua tab */
+  --editor-tab-width: 150px;
+
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
+  background-color: var(--editor-tab-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-gap);
 }
 
 .menu-top {
-    height: 40px;
-    background-color: var(--color-surface-raised);
+  height: 40px;
+  background-color: var(--color-surface-raised);
 }
 
 .menu-tabs {
-    flex: 1;
-    background-color: var(--color-surface);
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--editor-tab-surface);
 }
 
-/* ---------- TAB ---------- */
 
-/* Batas lebar tab: ubah angka 180px kalau mau lebih lebar / sempit */
+/* ---------- AREA BELAKANG DERETAN TAB ---------- */
+
+.code-editor :global(.flexlayout__tabset_tabbar_outer),
+.code-editor :global(.flexlayout__tabset_tabbar_outer_top),
+.code-editor :global(.flexlayout__tabset_tabbar_inner),
+.code-editor :global(.flexlayout__tabset_tabbar_inner_tab_container) {
+  background: var(--editor-tab-strip) !important;
+}
+
+/* Hilangkan garis pemisah deretan tab dengan editor */
+.code-editor :global(.flexlayout__tabset_tabbar_outer_top) {
+  border-bottom: 0 !important;
+}
+
+/* Letakkan tab di bagian bawah deretan tab */
+.code-editor :global(.flexlayout__tabset_tabbar_inner_tab_container) {
+  align-items: flex-end;
+}
+
+
+/* ---------- BENTUK DAN UKURAN TAB ---------- */
+
+.code-editor :global(.flexlayout__tab_button) {
+  position: relative;
+  box-sizing: border-box;
+
+  /* Lebar tetap: tidak mengikuti panjang nama file */
+  width: var(--editor-tab-width);
+  min-width: var(--editor-tab-width);
+  max-width: var(--editor-tab-width);
+  flex: 0 0 var(--editor-tab-width);
+
+  height: 36px;
+  margin-top: 4px;
+  margin-right: 5px;
+
+  /* Sisakan ruang di kanan untuk tombol × */
+  padding: 0 36px 0 12px;
+
+  display: flex;
+  align-items: center;
+
+  background: var(--editor-tab-surface) !important;
+  background-image: none !important;
+
+  border: 2px solid var(--editor-tab-border);
+  border-radius: 8px 8px 0 0;
+  box-shadow: none !important;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* ---------- TAB TIDAK AKTIF ---------- */
+
+.code-editor :global(.flexlayout__tab_button--unselected) {
+  background: var(--editor-tab-surface) !important;
+  color: #E6EDF3 !important;
+}
+
+.code-editor :global(.flexlayout__tab_button--unselected:hover) {
+  background: var(--editor-tab-surface) !important;
+  border-top-color: #35414D;
+}
+
+
+/* ---------- TAB AKTIF ---------- */
+
+.code-editor :global(.flexlayout__tab_button--selected),
+.code-editor :global(.flexlayout__tab_button--selected:hover) {
+  background: var(--editor-tab-surface) !important;
+  color: #FFFFFF !important;
+
+  /* Samakan garis bawah dengan editor biar keliatan nyatu */
+  border-bottom: 2px solid var(--editor-tab-surface) !important;
+  box-shadow: none !important;
+}
+
+
+/* ---------- AREA ISI EDITOR ---------- */
+
+.code-editor :global(.flexlayout__tab) {
+  border-top: 0 !important;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: none !important;
+}
+
+
+/* ---------- ISI JUDUL TAB ---------- */
+
 .code-editor :global(.flexlayout__tab_button_content) {
-    max-width: 180px;
-    min-width: 0;
-    overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .tabLabelWrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-/* Nama file kepanjangan -> dipotong jadi "nama_file_pan..." */
+
+/* ---------- IKON FILE ---------- */
+
+.tabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+
+/* ---------- NAMA FILE ---------- */
+
 .tabLabel {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Titik penanda "belum disimpan" */
+
+/* ---------- PENANDA BELUM DISIMPAN ---------- */
+
 .dirtyDot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--color-text-secondary);
-    flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+
+/* ---------- TOMBOL × DI KANAN TAB ---------- */
+
+.code-editor :global(.flexlayout__tab_button_trailing) {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 18px;
+  height: 18px;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .runButton {
