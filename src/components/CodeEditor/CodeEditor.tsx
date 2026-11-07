@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef } from 'react';import {
+import { useCallback, useEffect, useRef } from 'react';
+import {
   Layout,
   TabNode,
   TabSetNode,
@@ -190,7 +191,7 @@ export default function CodeEditor() {
     values.content = <TabLabel fileId={node.getId()} fallback={node.getName()} />;
   }, []);
 
-   const handleRenderTabSet = useCallback((
+  const handleRenderTabSet = useCallback((
     node: TabSetNode | BorderNode,
     renderValues: ITabSetRenderValues
   ) => {
@@ -229,7 +230,7 @@ export default function CodeEditor() {
     schedulePersist();
   }, []);
 
-   const handleRun = async () => {
+  const handleRun = async () => {
     const { activeFileId, openFiles } = useTabStore.getState();
 
     if (!activeFileId) {
@@ -276,7 +277,7 @@ export default function CodeEditor() {
     >
       <div className={styles['menu-top']}>
       </div>
-      
+
       <div
         className={styles['menu-tabs']}
         style={{ position: 'relative', width: '100%', height: '100%', minHeight: 0 }}
