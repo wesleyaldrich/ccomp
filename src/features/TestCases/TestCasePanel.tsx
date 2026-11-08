@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Minus, Play, Plus, X } from 'lucide-react';
 import { load } from '@tauri-apps/plugin-store'; 
+import { invoke } from '@tauri-apps/api/core';
+import { useTabStore } from '../../components/CodeEditor/useTabStore';
 import styles from './TestCasePanel.module.css';
 
 export interface TestCase {
     id: string;
     input: string;
     expectedOutput: string;
+}
+
+export interface TestCaseResultData {
+    id: string;
+    passed: boolean;
+    actual_output: string;
+    error?: string;
 }
 
 interface TestCasePanelProps {
@@ -16,6 +25,7 @@ interface TestCasePanelProps {
 export default function TestCasePanel({ onClose }: TestCasePanelProps) {
     const [testCases, setTestCases] = useState<TestCase[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [runningId, setRunningId] = useState<string | null>(null);
 
     // Load data
     useEffect(() => {
@@ -68,18 +78,71 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
         window.dispatchEvent(new CustomEvent('onDeleteTestCase', { detail: { id } }));
     }
 
-    // Run 1 test case
-    function runSingleTest(tc: TestCase, index: number) {
-        window.dispatchEvent(new CustomEvent('onRunSingleTest', { 
-            detail: { testCase: tc, name: `Test Case ${index + 1}` } 
-        }));
+    function getActiveFilePath(): string | null {
+        const state = useTabStore.getState();
+        const activeId = state.activeFileId;
+        if (!activeId) return null;
+        const file = state.openFiles.get(activeId);
+        return file?.path ?? null;
     }
 
-    // Run all test case
-    function runAllTests() {
-        window.dispatchEvent(new CustomEvent('onRunAllTests', { 
-            detail: { testCases } 
-        }));
+    // Run 1 test case
+    async function runSingleTest(tc: TestCase, index: number) {
+        const filePath = getActiveFilePath();
+        if (!filePath) {
+            alert('Buka dan simpan file C terlebih dahulu sebelum menjalankan test case.');
+            return;
+        }
+
+        setRunningId(tc.id);
+        try {
+            const results = await invoke<TestCaseResultData[]>('run_test_cases', {
+                filePath,
+                testCases: [tc],
+            });
+
+            window.dispatchEvent(new CustomEvent('onTestResultsComputed', { 
+                detail: { 
+                    results, 
+                    name: `Test Case ${index + 1}`,
+                    testCasesMap: { [tc.id]: tc }
+                } 
+            }));
+        } catch (err) {
+            alert(`Gagal menjalankan test case: ${err}`);
+        } finally {
+            setRunningId(null);
+        }
+    }
+
+    // Run all test cases
+    async function runAllTests() {
+        const filePath = getActiveFilePath();
+        if (!filePath) {
+            alert('Buka dan simpan file C terlebih dahulu sebelum menjalankan test case.');
+            return;
+        }
+
+        setRunningId('all');
+        try {
+            const results = await invoke<TestCaseResultData[]>('run_test_cases', {
+                filePath,
+                testCases,
+            });
+
+            const testCasesMap = Object.fromEntries(testCases.map(tc => [tc.id, tc]));
+            window.dispatchEvent(new CustomEvent('onTestResultsComputed', { 
+                detail: { 
+                    results, 
+                    name: 'All Test Cases',
+                    testCasesMap
+                } 
+            }));
+        } catch (err) {
+            alert(`Gagal menjalankan semua test case: ${err}`);
+        } finally {
+            setRunningId(null);
+        }
     }
 
     return (
@@ -95,8 +158,8 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
             {/* Sub Header */}
             <div className={styles.subHeader}>
                 <span className={styles.subTitle}>Test Cases</span>
-                <button className={styles.runAllBtn} onClick={runAllTests}>
-                    <Play size={13} strokeWidth={2.5} /> Run All
+                <button className={styles.runAllBtn} onClick={runAllTests} disabled={runningId !== null}>
+                    <Play size={13} strokeWidth={2.5} /> {runningId === 'all' ? 'Running...' : 'Run All'}
                 </button>
             </div>
 
@@ -135,6 +198,7 @@ export default function TestCasePanel({ onClose }: TestCasePanelProps) {
                                 className={styles.runBtn} 
                                 title="Run Test Case"
                                 onClick={() => runSingleTest(tc, index)}
+                                disabled={runningId !== null}
                             >
                                 <Play size={16} strokeWidth={2} />
                             </button>
