@@ -19,23 +19,25 @@ import { schedulePersist } from './session';
 import styles from './CodeEditor.module.css';
 import { invoke } from '@tauri-apps/api/core';
 
-// Isi tab: subscribe ke store sendiri, jadi mengetik tidak me-render ulang Layout
 function EditorTab({ fileId }: { fileId: string }) {
   const file = useTabStore((s) => s.openFiles.get(fileId));
   const updateContent = useTabStore((s) => s.updateContent);
 
-
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
-  
-  // State untuk melacak highlight di dalam editor
   const decorationIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (!file) return;
 
     const applyHighlight = (path: string, line: number, word: string) => {
-      if (path !== file.path || !editorRef.current || !monacoRef.current) return;
+      if (!file.path) return;
+
+      const normalizedEventPath = path.replace(/\\/g, '/').toLowerCase();
+      const normalizedFilePath = file.path.replace(/\\/g, '/').toLowerCase();
+
+      if (normalizedEventPath !== normalizedFilePath || !editorRef.current || !monacoRef.current) return;
+      
       const editor = editorRef.current;
       const monaco = monacoRef.current;
 
@@ -47,15 +49,12 @@ function EditorTab({ fileId }: { fileId: string }) {
         const col = text.toLowerCase().indexOf(word.toLowerCase()) + 1;
         
         if (col > 0) {
-          // Terapkan warna kustom dari CSS, bukan selection standar biru
           decorationIdsRef.current = editor.deltaDecorations(decorationIdsRef.current, [
             {
               range: new monaco.Range(line, col, line, col + word.length),
               options: { inlineClassName: 'vscode-search-highlight-editor' }
             }
           ]);
-          // Letakkan kursor tepat di sebelah kata
-          editor.setPosition({ lineNumber: line, column: col });
         } else {
           editor.setPosition({ lineNumber: line, column: 1 });
         }
@@ -66,13 +65,15 @@ function EditorTab({ fileId }: { fileId: string }) {
     const handleSearchEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       const { path, line, word } = customEvent.detail;
-      applyHighlight(path, line, word);
+      
+      setTimeout(() => {
+        applyHighlight(path, line, word);
+      }, 50);
     };
 
     window.addEventListener('ccomp:search-goto', handleSearchEvent);
     return () => window.removeEventListener('ccomp:search-goto', handleSearchEvent);
   }, [file?.path]);
-
 
   if (!file) {
     return <div style={{ color: '#aaa', padding: 16 }}>Memuat file...</div>;
@@ -81,17 +82,24 @@ function EditorTab({ fileId }: { fileId: string }) {
   return (
     <Editor
       height="100%"
-      theme="ccomp-dark" // tema didefinisikan di src/monacoSetup.ts
-      path={file.id} // satu model Monaco per tab: undo & posisi kursor terjaga
+      theme="ccomp-dark" 
+      path={file.id} 
       language={file.language}
       value={file.content}
       onChange={(value) => updateContent(file.id, value ?? '')}
       onMount={(editor, monaco) => {
-        // File yang baru dibuat dari Explorer: langsung fokus supaya bisa diketik
-        if (consumeEditorFocusRequest(file.path)) editor.focus();
+        editorRef.current = editor;
+        monacoRef.current = monaco;
+
+        if (file.path && consumeEditorFocusRequest(file.path)) editor.focus();
 
         const pending = (window as any).__pendingSearchJump;
-        if (pending && pending.path === file.path) {
+        
+        if (
+          pending && 
+          file.path && 
+          pending.path.replace(/\\/g, '/').toLowerCase() === file.path.replace(/\\/g, '/').toLowerCase()
+        ) {
           setTimeout(() => {
             editor.revealLineInCenter(pending.line);
             const model = editor.getModel();
@@ -115,7 +123,6 @@ function EditorTab({ fileId }: { fileId: string }) {
           }, 50);
         }
 
-        // Hapus highlight oranye saat user mengeklik tempat lain atau memindahkan panah keyboard
         editor.onDidChangeCursorPosition((e: any) => {
           if (
             decorationIdsRef.current.length > 0 && 
@@ -125,7 +132,6 @@ function EditorTab({ fileId }: { fileId: string }) {
           }
         });
 
-        // Ctrl+S saat kursor berada di dalam editor
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
           void saveFile(file.id);
         });
@@ -142,7 +148,6 @@ function EditorTab({ fileId }: { fileId: string }) {
   );
 }
 
-// Judul tab: ikon file, nama file, dan penanda belum disimpan
 function TabLabel({
   fileId,
   fallback,
@@ -155,8 +160,6 @@ function TabLabel({
   const dirty = file ? isDirty(file) : false;
   const title = file?.title ?? fallback;
 
-  // Gunakan nama file asli untuk menentukan ikon.
-  // Mendukung pemisah path Windows (\) maupun Unix (/).
   const fileName = file?.path
     ? file.path.split(/[\\/]/).pop() || title
     : title;
@@ -169,17 +172,29 @@ function TabLabel({
       <span className={styles.tabIcon}>
         <FileIcon fileName={fileName} isDir={false} />
       </span>
-
       <span className={styles.tabLabel}>
         {title}
       </span>
-
       {dirty && <span className={styles.dirtyDot} />}
     </span>
   );
 }
 
 export default function CodeEditor() {
+  useEffect(() => {
+    if (!document.getElementById('ccomp-search-highlight-style')) {
+      const style = document.createElement('style');
+      style.id = 'ccomp-search-highlight-style';
+      style.innerHTML = `
+        .vscode-search-highlight-editor {
+          background-color: rgba(228, 127, 44, 0.4) !important;
+          border-radius: 2px !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   const factory = useCallback((node: TabNode) => {
     if (node.getComponent() === 'editor') {
       return <EditorTab fileId={node.getId()} />;
@@ -206,7 +221,7 @@ export default function CodeEditor() {
       >
         Run
       </button>
-          );
+    );
   }, []);
 
   const handleAction = useCallback((action: Action) => {
@@ -215,7 +230,6 @@ export default function CodeEditor() {
       const file = useTabStore.getState().openFiles.get(id);
 
       if (file && isDirty(file)) {
-        // Batalkan penutupan sekarang, tanya dulu mau disimpan atau tidak
         void confirmCloseDirtyTab(id);
         return undefined;
       }
@@ -257,7 +271,6 @@ export default function CodeEditor() {
     console.log(result);
   };
 
-  // Ctrl+S saat fokus tidak di dalam editor (misalnya habis klik file di Explorer)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 's') {

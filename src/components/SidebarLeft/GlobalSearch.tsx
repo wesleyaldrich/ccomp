@@ -360,7 +360,6 @@ export function GlobalSearch({ onSelectFile }: GlobalSearchProps) {
                     className={styles.matchItem}
                     onClick={() => handleMatchClick(filePath, res.line_number)}
                   >
-                    <span className={styles.matchLineNumber}>{res.line_number}</span>
                     <span className={styles.matchText}>
                       {highlightText(
                         res.line_text.length > 80 ? res.line_text.substring(0, 80) + '...' : res.line_text,

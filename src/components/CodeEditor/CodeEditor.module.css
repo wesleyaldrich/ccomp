@@ -205,6 +205,6 @@
 }
 
 :global(.vscode-search-highlight-editor) {
-  background-color: rgba(228, 127, 44, 0.4);
+  background-color: rgba(228, 127, 44, 0.4) !important;
   border-radius: 2px;
 }
