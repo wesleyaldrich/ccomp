@@ -85,8 +85,29 @@ function EditorTab({ fileId }: { fileId: string }) {
       path={file.id} // satu model Monaco per tab: undo & posisi kursor terjaga
       language={file.language}
       value={file.content}
-      onChange={(value) => updateContent(file.id, value ?? '')}
+      onChange={(value) => {
+      const content = value ?? '';
+
+      console.log('[EDITOR] Isi berubah:', {
+        id: file.id,
+        title: file.title,
+        contentLength: content.length,
+      });
+
+      updateContent(file.id, content);
+
+      const storedFile = useTabStore
+        .getState()
+        .openFiles.get(file.id);
+
+      console.log('[STORE] Setelah updateContent:', {
+        id: file.id,
+        contentLength: storedFile?.content.length,
+      });
+    }}
       onMount={(editor, monaco) => {
+        editorRef.current = editor;
+        monacoRef.current = monaco;
         // File yang baru dibuat dari Explorer: langsung fokus supaya bisa diketik
         if (consumeEditorFocusRequest(file.path)) editor.focus();
 
@@ -126,9 +147,20 @@ function EditorTab({ fileId }: { fileId: string }) {
         });
 
         // Ctrl+S saat kursor berada di dalam editor
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-          void saveFile(file.id);
-        });
+        // Ambil ID aktif saat shortcut ditekan, bukan ID file yang tertangkap saat onMount.
+        editor.addCommand(
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+          () => {
+            const state = useTabStore.getState();
+            const id = state.activeFileId;
+
+            if (!id) return;
+
+            const activeFile = state.openFiles.get(id);
+            if (!activeFile) return;
+            void saveFile(id);
+          },
+        );
       }}
       options={{
         fontSize: 14,
@@ -263,7 +295,17 @@ export default function CodeEditor() {
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
         const id = useTabStore.getState().activeFileId;
-        if (id) void saveFile(id);
+
+        console.log('[SAVE SOURCE] Window:', {
+          activeFileId: id,
+          title: id
+            ? useTabStore.getState().openFiles.get(id)?.title
+            : null,
+        });
+
+        if (id) {
+          void saveFile(id);
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown);
