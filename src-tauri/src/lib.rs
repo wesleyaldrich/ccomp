@@ -4,6 +4,7 @@
 mod fs_commands;
 mod run_commands;
 mod search_commands;
+mod test_commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,6 +21,7 @@ pub fn run() {
             fs_commands::read_file_content,
             fs_commands::save_file_content,
             run_commands::run_code,
+            test_commands::run_test_cases,
             search_commands::search_in_files,
             search_commands::replace_in_file,
         ])

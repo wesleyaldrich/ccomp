@@ -50,6 +50,7 @@
     height: 40px;
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .headerTitle {
@@ -68,11 +69,20 @@
     align-items: center;
     height: 100%;
     overflow-x: auto;
-    margin-left: 8px;
+    overflow-y: hidden;
+    flex: 1;
+    margin-left: 0;
+    padding-left: 8px;
+    scroll-behavior: smooth;
 }
 
 .tabsContainer::-webkit-scrollbar {
-    display: none;
+    height: 4px;
+}
+
+.tabsContainer::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
 }
 
 .tab {
@@ -86,6 +96,8 @@
     border-bottom: 2px solid transparent;
     font-size: 13px;
     user-select: none;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .tab:hover {
@@ -250,4 +262,31 @@
 .highlightRun {
     color: var(--color-focus);
     font-weight: 500;
+}
+
+.statusBadge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.statusAccepted {
+    background-color: rgba(46, 160, 67, 0.2);
+    color: #3fb950;
+    border: 1px solid rgba(46, 160, 67, 0.4);
+}
+
+.statusFailed {
+    background-color: rgba(248, 81, 73, 0.2);
+    color: #f85149;
+    border: 1px solid rgba(248, 81, 73, 0.4);
+}
+
+.statusFinished {
+    background-color: rgba(56, 139, 253, 0.2);
+    color: #58a6ff;
+    border: 1px solid rgba(56, 139, 253, 0.4);
 }
