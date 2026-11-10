@@ -109,13 +109,8 @@ function EditorTab({ fileId }: { fileId: string }) {
       onMount={(editor, monaco) => {
         editorRef.current = editor;
         monacoRef.current = monaco;
-<<<<<<< HEAD
-        // File yang baru dibuat dari Explorer: langsung fokus supaya bisa diketik
-        if (consumeEditorFocusRequest(file.path)) editor.focus();
-=======
 
         if (file.path && consumeEditorFocusRequest(file.path)) editor.focus();
->>>>>>> 7cb25bc16ae852552804400795f1798fef927554
 
         const pending = (window as any).__pendingSearchJump;
         
