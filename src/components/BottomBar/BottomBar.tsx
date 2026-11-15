@@ -12,6 +12,7 @@ interface TestResult {
     status: string;
     runtime: string;
     memory: string;
+    memoryTooltip?: string;
     exitCode: number;
     compiler: string;
     executeAt: string;
@@ -79,18 +80,27 @@ function BottomBar() {
                         expectedOutput: ''
                     });
 
-                    const expectedIsEmpty = !testCaseData.expectedOutput || testCaseData.expectedOutput.trim() === '';
+                    // Gunakan perbandingan string kosong murni (tanpa .trim()) agar spasi kosong (" ") tetap dianggap valid
+                    const currentExpected = matchingTestCase ? matchingTestCase.expectedOutput : testCaseData.expectedOutput;
+                    const expectedIsEmpty = !currentExpected || currentExpected === '';
                     let statusStr = res.error ? 'RUNTIME ERROR' : (res.passed ? 'ACCEPTED' : 'WRONG ANSWER');
 
                     if (!res.error && expectedIsEmpty) {
                         statusStr = 'FINISHED';
                     }
 
+                    const isMemoryUnavailable = res.memory_kb < 0;
+                    const memoryStr = isMemoryUnavailable ? 'N/A' : `${res.memory_kb} KB`;
+                    const memoryTooltip = isMemoryUnavailable
+                        ? 'Memory usage unavailable: process terminated too quickly before OS metrics could be sampled.'
+                        : 'Peak working set memory usage';
+
                     const outputStr = res.error ? res.error : res.actual_output;
                     const newResult: TestResult = {
                         status: statusStr,
                         runtime: `${res.duration_ms} ms`,
-                        memory: `${res.memory_kb} KB`,
+                        memory: memoryStr,
+                        memoryTooltip,
                         exitCode: res.error ? 1 : 0,
                         compiler: res.compiler_version || 'GCC 13.2.0 -O2',
                         executeAt: executeAtStr,
@@ -234,7 +244,7 @@ function BottomBar() {
                             {[
                                 { label: 'Status', value: activeTabData.result.status, isBadge: true },
                                 { label: 'Runtime', value: activeTabData.result.runtime },
-                                { label: 'Memory', value: activeTabData.result.memory },
+                                { label: 'Memory', value: activeTabData.result.memory, tooltip: activeTabData.result.memoryTooltip },
                                 { label: 'Exit Code', value: activeTabData.result.exitCode },
                                 { label: 'Compiler', value: activeTabData.result.compiler },
                                 { label: 'Execute At', value: activeTabData.result.executeAt },
@@ -250,7 +260,13 @@ function BottomBar() {
                                             {item.value}
                                         </span>
                                     ) : (
-                                        <span className={styles.statValue}>{item.value}</span>
+                                        <span
+                                            className={styles.statValue}
+                                            title={item.tooltip}
+                                            style={item.tooltip ? { cursor: 'help' } : undefined}
+                                        >
+                                            {item.value}
+                                        </span>
                                     )}
                                 </div>
                             ))}
@@ -261,13 +277,13 @@ function BottomBar() {
                                 <div className={styles.ioGroup}>
                                     <span className={styles.ioLabel}>Input</span>
                                     <div className={styles.ioBox}>
-                                        {activeTabData.testCase.input || <span className={styles.emptyText}>Empty</span>}
+                                        {activeTabData.testCase.input !== '' ? activeTabData.testCase.input : <span className={styles.emptyText}>Empty</span>}
                                     </div>
                                 </div>
                                 <div className={styles.ioGroup}>
                                     <span className={styles.ioLabel}>Expected Output</span>
                                     <div className={styles.ioBox}>
-                                        {activeTabData.testCase.expectedOutput || <span className={styles.emptyText}>Empty</span>}
+                                        {activeTabData.testCase.expectedOutput !== '' ? activeTabData.testCase.expectedOutput : <span className={styles.emptyText}>Empty</span>}
                                     </div>
                                 </div>
                             </div>
@@ -275,7 +291,7 @@ function BottomBar() {
                             <div className={styles.ioGroup} style={{ width: '100%' }}>
                                 <span className={styles.ioLabel}>Your Output</span>
                                 <div className={styles.ioBox}>
-                                    {activeTabData.result.output || <span className={styles.emptyText}>Empty</span>}
+                                    {activeTabData.result.output !== '' ? activeTabData.result.output : <span className={styles.emptyText}>Empty</span>}
                                 </div>
                             </div>
                         </div>

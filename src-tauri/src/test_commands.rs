@@ -92,12 +92,12 @@ pub struct TestCaseResult {
     pub actual_output: String,
     pub error: Option<String>,
     pub duration_ms: u128,
-    pub memory_kb: u64,
+    pub memory_kb: i64,
     pub compiler_version: String,
 }
 
 #[cfg(target_os = "windows")]
-fn get_process_memory_usage(process_handle: std::os::windows::io::RawHandle) -> u64 {
+fn get_process_memory_usage(process_handle: std::os::windows::io::RawHandle) -> i64 {
     use std::os::raw::c_void;
 
     #[repr(C)]
@@ -143,12 +143,12 @@ fn get_process_memory_usage(process_handle: std::os::windows::io::RawHandle) -> 
             &mut counters,
             counters.cb,
         );
-        if success != 0 {
-            return (counters.PeakWorkingSetSize as u64) / 1024;
+        if success != 0 && counters.PeakWorkingSetSize > 0 {
+            return ((counters.PeakWorkingSetSize as u64) / 1024) as i64;
         }
     }
     
-    256
+    -1
 }
 
 #[tauri::command]
@@ -186,8 +186,8 @@ pub async fn run_test_cases(
 
         for tc in test_cases {
             let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let input = tc.get("input").and_then(|v| v.as_str()).unwrap_or("").trim();
-            let expected = tc.get("expectedOutput").and_then(|v| v.as_str()).unwrap_or("").trim();
+            let input = tc.get("input").and_then(|v| v.as_str()).unwrap_or("");
+            let expected = tc.get("expectedOutput").and_then(|v| v.as_str()).unwrap_or("");
 
             if input.is_empty() {
                 results.push(TestCaseResult {
@@ -219,38 +219,74 @@ pub async fn run_test_cases(
                         actual_output: "".to_string(),
                         error: Some(format!("Failed to spawn process: {}", e)),
                         duration_ms,
-                        memory_kb: 0,
+                        memory_kb: -1,
                         compiler_version: compiler_version.clone(),
                     });
                     continue;
                 }
             };
 
-            if let Some(stdin) = child.stdin.as_mut() {
+            let mut stdin_pipe = child.stdin.take();
+            let stdout_pipe = child.stdout.take();
+            let stderr_pipe = child.stderr.take();
+
+            if let Some(mut stdin) = stdin_pipe.take() {
                 let _ = stdin.write_all(input.as_bytes());
             }
 
-            #[cfg(target_os = "windows")]
-            let raw_handle = std::os::windows::io::AsRawHandle::as_raw_handle(&child);
+            let stdout_handle = std::thread::spawn(move || {
+                let mut buf = Vec::new();
+                if let Some(mut out) = stdout_pipe {
+                    let _ = std::io::Read::read_to_end(&mut out, &mut buf);
+                }
+                buf
+            });
 
-            match child.wait_with_output() {
-                Ok(output) => {
+            let stderr_handle = std::thread::spawn(move || {
+                let mut buf = Vec::new();
+                if let Some(mut err) = stderr_pipe {
+                    let _ = std::io::Read::read_to_end(&mut err, &mut buf);
+                }
+                buf
+            });
+
+            match child.wait() {
+                Ok(status) => {
                     let duration_ms = start_time.elapsed().as_millis();
                     
                     #[cfg(target_os = "windows")]
-                    let memory_kb = get_process_memory_usage(raw_handle);
+                    let memory_kb = {
+                        let raw_handle = std::os::windows::io::AsRawHandle::as_raw_handle(&child);
+                        get_process_memory_usage(raw_handle)
+                    };
                     #[cfg(not(target_os = "windows"))]
-                    let memory_kb = 256;
+                    let memory_kb: i64 = -1;
 
-                    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+                    let stdout_bytes = stdout_handle.join().unwrap_or_default();
+                    let stderr_bytes = stderr_handle.join().unwrap_or_default();
 
-                    if !output.status.success() && !stderr.is_empty() {
+                    let stdout = String::from_utf8_lossy(&stdout_bytes).to_string();
+                    let stderr = String::from_utf8_lossy(&stderr_bytes).trim().to_string();
+
+                    if !status.success() {
+                        let exit_code = status.code().unwrap_or(-1);
+                        let error_msg = if !stderr.is_empty() {
+                            stderr
+                        } else if exit_code == -1073741819 {
+                            "Runtime Error: Segmentation Fault / Access Violation (Exit Code: 0xC0000005)".to_string()
+                        } else if exit_code == -1073741571 {
+                            "Runtime Error: Stack Overflow (Exit Code: 0xC00000FD)".to_string()
+                        } else if exit_code == -1073741676 {
+                            "Runtime Error: Division by Zero (Exit Code: 0xC0000094)".to_string()
+                        } else {
+                            format!("Runtime Error: Process terminated abnormally (Exit Code: {})", exit_code)
+                        };
+
                         results.push(TestCaseResult {
                             id,
                             passed: false,
-                            actual_output: stdout,
-                            error: Some(stderr),
+                            actual_output: stdout.replace("\r\n", "\n"),
+                            error: Some(error_msg),
                             duration_ms,
                             memory_kb,
                             compiler_version: compiler_version.clone(),
@@ -258,12 +294,18 @@ pub async fn run_test_cases(
                     } else {
                         let normalized_actual = stdout.replace("\r\n", "\n");
                         let normalized_expected = expected.replace("\r\n", "\n");
+                        
+                        let comparable_actual = if !normalized_expected.ends_with('\n') {
+                            normalized_actual.strip_suffix('\n').unwrap_or(&normalized_actual)
+                        } else {
+                            &normalized_actual
+                        };
 
-                        let passed = normalized_actual == normalized_expected;
+                        let passed = comparable_actual == normalized_expected;
                         results.push(TestCaseResult {
                             id,
                             passed,
-                            actual_output: stdout,
+                            actual_output: normalized_actual,
                             error: None,
                             duration_ms,
                             memory_kb,
@@ -279,7 +321,7 @@ pub async fn run_test_cases(
                         actual_output: "".to_string(),
                         error: Some(format!("Execution failed: {}", e)),
                         duration_ms,
-                        memory_kb: 256,
+                        memory_kb: -1,
                         compiler_version: compiler_version.clone(),
                     });
                 }
