@@ -7,6 +7,8 @@ import SearchIcon from '../../assets/icons/menu_search.svg?react';
 import SearchIconActive from '../../assets/icons/menu_search_active.svg?react';
 import TestResultIcon from '../../assets/icons/menu_test_result.svg?react';
 import TestResultIconActive from '../../assets/icons/menu_test_result_active.svg?react';
+import SettingsIcon from '../../assets/icons/menu_settings.svg?react';
+import SettingsIconActive from '../../assets/icons/menu_settings_active.svg?react';
 import { Explorer } from './Explorer';
 import { GlobalSearch } from './GlobalSearch';
 
@@ -22,6 +24,7 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
     /* Adjustable sidebar width */
     const [sidebarWidth, setSidebarWidth] = useState(220);
     const [isBottomBarOpen, setIsBottomBarOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     /*  This method handles the logic to correctly handle
         active state when toggling between menus. */
@@ -29,8 +32,16 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
         const handleStateChange = (e: Event) => {
             setIsBottomBarOpen((e as CustomEvent).detail.isOpen);
         };
+        const handleSettingsStateChange = (e: Event) => {
+            setIsSettingsOpen((e as CustomEvent).detail.isOpen);
+        };
+
         window.addEventListener('onBottomBarStateChange', handleStateChange);
-        return () => window.removeEventListener('onBottomBarStateChange', handleStateChange);
+        window.addEventListener('onSettingsStateChange', handleSettingsStateChange);
+        return () => {
+            window.removeEventListener('onBottomBarStateChange', handleStateChange);
+            window.removeEventListener('onSettingsStateChange', handleSettingsStateChange);
+        };
     }, []);
 
     function toggleMenu(menu: string) {
@@ -39,6 +50,10 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
 
     function handleToggleBottomBar() {
         window.dispatchEvent(new CustomEvent('onToggleBottomBar'));
+    }
+
+    function handleToggleSettings() {
+        window.dispatchEvent(new CustomEvent('onToggleSettings'));
     }
 
     const MIN_WIDTH = 180;
@@ -96,6 +111,12 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                         iconActive={<TestResultIconActive />}
                         active={isBottomBarOpen}
                         onClick={handleToggleBottomBar}
+                    />
+                    <MenuIcon
+                        icon={<SettingsIcon />}
+                        iconActive={<SettingsIconActive />}
+                        active={isSettingsOpen}
+                        onClick={handleToggleSettings}
                     />
                 </div>
                 
