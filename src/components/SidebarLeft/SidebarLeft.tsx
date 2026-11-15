@@ -109,7 +109,7 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                     <MenuIcon
                         icon={<TestResultIcon />}
                         iconActive={<TestResultIconActive />}
-                        active={isBottomBarOpen}
+                        active={isBottomBarOpen && !isSettingsOpen}
                         onClick={handleToggleBottomBar}
                     />
                     <MenuIcon
