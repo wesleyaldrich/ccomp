@@ -9,6 +9,8 @@ import TestResultIcon from '../../assets/icons/menu_test_result.svg?react';
 import TestResultIconActive from '../../assets/icons/menu_test_result_active.svg?react';
 import { Explorer } from './Explorer';
 import { GlobalSearch } from './GlobalSearch';
+// Static Analysis
+import { ChartNoAxesCombined } from 'lucide-react';
 
 interface SidebarLeftProps {
   onSelectFile?: (path: string) => void;
@@ -23,13 +25,21 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
     const [sidebarWidth, setSidebarWidth] = useState(220);
     const [isBottomBarOpen, setIsBottomBarOpen] = useState(false);
 
+    // Static Analysis
+    const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+
+
     /*  This method handles the logic to correctly handle
         active state when toggling between menus. */
     useEffect(() => {
         const handleStateChange = (e: Event) => {
-            setIsBottomBarOpen((e as CustomEvent).detail.isOpen);
+            const detail = (e as CustomEvent).detail;
+            const activeView = detail.activeView || 'tests';
+            setIsBottomBarOpen(detail.isOpen && activeView === 'tests');
+            setIsAnalysisOpen(detail.isOpen && activeView === 'analysis');
         };
         window.addEventListener('onBottomBarStateChange', handleStateChange);
+        window.dispatchEvent(new CustomEvent('onRequestBottomBarState'));
         return () => window.removeEventListener('onBottomBarStateChange', handleStateChange);
     }, []);
 
@@ -39,6 +49,11 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
 
     function handleToggleBottomBar() {
         window.dispatchEvent(new CustomEvent('onToggleBottomBar'));
+    }
+
+    // Static Analysis
+    function handleToggleAnalysis() {
+        window.dispatchEvent(new CustomEvent('onToggleAnalysis'));
     }
 
     const MIN_WIDTH = 180;
@@ -97,6 +112,15 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                         active={isBottomBarOpen}
                         onClick={handleToggleBottomBar}
                     />
+                    {/* Static Analysis */}
+                    <div title="Static Analysis">
+                        <MenuIcon
+                            icon={<ChartNoAxesCombined size={24} style={{ color: '#ffffff' }}/>}
+                            iconActive={<ChartNoAxesCombined size={24} style={{ color: 'var(--color-focus)' }} />}
+                            active={isAnalysisOpen}
+                            onClick={handleToggleAnalysis}
+                        />
+                    </div>
                 </div>
                 
             </div>
