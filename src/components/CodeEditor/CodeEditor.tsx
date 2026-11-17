@@ -18,6 +18,7 @@ import { confirmCloseDirtyTab, consumeEditorFocusRequest, saveFile } from './fil
 import { schedulePersist } from './session';
 import styles from './CodeEditor.module.css';
 import { invoke } from '@tauri-apps/api/core';
+import { analyzeActiveFile } from './analysisActions';
 
 function EditorTab({ fileId }: { fileId: string }) {
   const file = useTabStore((s) => s.openFiles.get(fileId));
@@ -248,12 +249,19 @@ export default function CodeEditor() {
   }, []);
 
   const handleRenderTabSet = useCallback((
-    node: TabSetNode | BorderNode,
-    renderValues: ITabSetRenderValues
+  node: TabSetNode | BorderNode,
+  renderValues: ITabSetRenderValues
   ) => {
     console.log('TABSET CALLBACK FIRED', node.getId())
 
     renderValues.buttons.push(
+      <button
+        key="analyze"
+        className={styles.runButton}
+        onClick={handleAnalyze}
+      >
+        Analyze
+      </button>,
       <button
         key="run"
         className={styles.runButton}
@@ -316,6 +324,10 @@ export default function CodeEditor() {
 
     console.log(result);
   };
+
+  const handleAnalyze = async () => {
+  await analyzeActiveFile();
+};
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

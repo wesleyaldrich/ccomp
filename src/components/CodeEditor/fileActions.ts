@@ -10,6 +10,7 @@ import {
   normalizePath,
   samePath,
 } from './pathUtils';
+import { analyzeFile } from './analysisActions';
 
 const MAIN_TABSET_ID = 'main_tabset';
 
@@ -89,35 +90,43 @@ export async function openFileFromDisk(filePath: string) {
 
     opening.add(key);
 
+  try {
+    let content = '';
+    let error: string | undefined;
+
     try {
-        let content = '';
-        let error: string | undefined;
-
-        try {
-            content = await invoke<string>('read_file_content', { filePath });
-        } catch (err) {
-            error = String(err);
-            console.error('Gagal membuka file:', err);
-        }
-
-        const title = basename(filePath);
-        const id = newTabId();
-
-        addTab({
-            id,
-            path: filePath,
-            title,
-            content,
-            savedContent: content,
-            language: languageFromFileName(title),
-            error,
-        });
-
-        closePristineUntitled(id);
-
-    } finally {
-        opening.delete(key);
+        content = await invoke<string>('read_file_content', { filePath });
+    } catch (err) {
+        error = String(err);
+        console.error('Gagal membuka file:', err);
     }
+
+    const title = basename(filePath);
+    const id = newTabId();
+
+    addTab({
+        id,
+        path: filePath,
+        title,
+        content,
+        savedContent: content,
+        language: languageFromFileName(title),
+        error,
+    });
+    closePristineUntitled(id);
+
+    const extension = filePath
+      .split('.')
+      .pop()
+      ?.toLowerCase();
+
+
+    if (extension === 'c') {
+      void analyzeFile(id, filePath);
+    }
+  } finally {
+    opening.delete(key);
+  }
 }
 
 const saving = new Set<string>();
