@@ -11,6 +11,8 @@ import SettingsIcon from '../../assets/icons/menu_settings.svg?react';
 import SettingsIconActive from '../../assets/icons/menu_settings_active.svg?react';
 import { Explorer } from './Explorer';
 import { GlobalSearch } from './GlobalSearch';
+// Static Analysis
+import { ChartNoAxesCombined } from 'lucide-react';
 
 interface SidebarLeftProps {
   onSelectFile?: (path: string) => void;
@@ -24,13 +26,20 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
     /* Adjustable sidebar width */
     const [sidebarWidth, setSidebarWidth] = useState(220);
     const [isBottomBarOpen, setIsBottomBarOpen] = useState(false);
+
+    // Static Analysis
+    const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     /*  This method handles the logic to correctly handle
         active state when toggling between menus. */
     useEffect(() => {
         const handleStateChange = (e: Event) => {
-            setIsBottomBarOpen((e as CustomEvent).detail.isOpen);
+            const detail = (e as CustomEvent).detail;
+            const activeView = detail.activeView || 'tests';
+            setIsBottomBarOpen(detail.isOpen && activeView === 'tests');
+            setIsAnalysisOpen(detail.isOpen && activeView === 'analysis');
         };
         const handleSettingsStateChange = (e: Event) => {
             setIsSettingsOpen((e as CustomEvent).detail.isOpen);
@@ -38,6 +47,7 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
 
         window.addEventListener('onBottomBarStateChange', handleStateChange);
         window.addEventListener('onSettingsStateChange', handleSettingsStateChange);
+        window.dispatchEvent(new CustomEvent('onRequestBottomBarState'));
         return () => {
             window.removeEventListener('onBottomBarStateChange', handleStateChange);
             window.removeEventListener('onSettingsStateChange', handleSettingsStateChange);
@@ -50,6 +60,11 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
 
     function handleToggleBottomBar() {
         window.dispatchEvent(new CustomEvent('onToggleBottomBar'));
+    }
+
+    // Static Analysis
+    function handleToggleAnalysis() {
+        window.dispatchEvent(new CustomEvent('onToggleAnalysis'));
     }
 
     function handleToggleSettings() {
@@ -118,6 +133,15 @@ function SidebarLeft({ onSelectFile }: SidebarLeftProps) {
                         active={isSettingsOpen}
                         onClick={handleToggleSettings}
                     />
+                    {/* Static Analysis */}
+                    <div title="Static Analysis">
+                        <MenuIcon
+                            icon={<ChartNoAxesCombined size={24} style={{ color: '#ffffff' }}/>}
+                            iconActive={<ChartNoAxesCombined size={24} style={{ color: 'var(--color-focus)' }} />}
+                            active={isAnalysisOpen}
+                            onClick={handleToggleAnalysis}
+                        />
+                    </div>
                 </div>
                 
             </div>

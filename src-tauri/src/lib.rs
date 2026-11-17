@@ -5,6 +5,7 @@ mod fs_commands;
 mod run_commands;
 mod search_commands;
 mod test_commands;
+mod analysis_commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -24,6 +25,7 @@ pub fn run() {
             test_commands::run_test_cases,
             search_commands::search_in_files,
             search_commands::replace_in_file,
+            analysis_commands::analyze_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

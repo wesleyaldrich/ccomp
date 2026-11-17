@@ -10,6 +10,7 @@ import {
   normalizePath,
   samePath,
 } from './pathUtils';
+import { analyzeFile } from './analysisActions';
 
 const MAIN_TABSET_ID = 'main_tabset';
 
@@ -100,6 +101,16 @@ export async function openFileFromDisk(filePath: string, options?: { silent?: bo
       language: languageFromFileName(title),
     });
     closePristineUntitled(id);
+
+    const extension = filePath
+      .split('.')
+      .pop()
+      ?.toLowerCase();
+
+
+    if (extension === 'c') {
+      void analyzeFile(id, filePath);
+    }
   } catch (err) {
     console.error('Gagal membuka file:', err);
     if (!options?.silent) {
