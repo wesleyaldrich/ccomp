@@ -17,6 +17,7 @@ export interface TabFile {
   /** Isi terakhir yang tersimpan di disk (untuk mendeteksi "belum disimpan") */
   savedContent: string;
   language: string;
+  error?: string;
 }
 
 export function isDirty(file: TabFile): boolean {

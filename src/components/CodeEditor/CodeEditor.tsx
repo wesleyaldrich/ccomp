@@ -79,6 +79,16 @@ function EditorTab({ fileId }: { fileId: string }) {
     return <div style={{ color: '#aaa', padding: 16 }}>Memuat file...</div>;
   }
 
+  // If there is error (such as when the file is not UTF-8)
+  if (file.error) {
+      return (
+          <div className={styles.errorContainer}>
+              <h3>Unable to display file</h3>
+              <p>{file.error}</p>
+          </div>
+      );
+  }
+
   return (
     <Editor
       height="100%"
@@ -241,8 +251,7 @@ export default function CodeEditor() {
     node: TabSetNode | BorderNode,
     renderValues: ITabSetRenderValues
   ) => {
-    console.log('TABSET CALLBACK FIRED', node.getId());
-    console.log('Render values:', renderValues);
+    console.log('TABSET CALLBACK FIRED', node.getId())
 
     renderValues.buttons.push(
       <button
@@ -287,6 +296,12 @@ export default function CodeEditor() {
 
     if (!file) {
       console.log('Active file not found.');
+      return;
+    }
+    
+    // Kalo misal ada error, isi filenya kosongan, jadi jangan ada logic run
+    if (file.error) {
+      console.warn("Running file with error is not allowed.")
       return;
     }
 
