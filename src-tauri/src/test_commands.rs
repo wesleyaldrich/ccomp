@@ -230,10 +230,6 @@ pub async fn run_test_cases(
             let stdout_pipe = child.stdout.take();
             let stderr_pipe = child.stderr.take();
 
-            if let Some(mut stdin) = stdin_pipe.take() {
-                let _ = stdin.write_all(input.as_bytes());
-            }
-
             let stdout_handle = std::thread::spawn(move || {
                 let mut buf = Vec::new();
                 if let Some(mut out) = stdout_pipe {
@@ -249,6 +245,11 @@ pub async fn run_test_cases(
                 }
                 buf
             });
+
+            if let Some(mut stdin) = stdin_pipe.take() {
+                let normalized_input = input.replace("\r\n", "\n");
+                let _ = stdin.write_all(normalized_input.as_bytes());
+            }
 
             match child.wait() {
                 Ok(status) => {
@@ -294,14 +295,7 @@ pub async fn run_test_cases(
                     } else {
                         let normalized_actual = stdout.replace("\r\n", "\n");
                         let normalized_expected = expected.replace("\r\n", "\n");
-                        
-                        let comparable_actual = if !normalized_expected.ends_with('\n') {
-                            normalized_actual.strip_suffix('\n').unwrap_or(&normalized_actual)
-                        } else {
-                            &normalized_actual
-                        };
-
-                        let passed = comparable_actual == normalized_expected;
+                        let passed = normalized_actual == normalized_expected;
                         results.push(TestCaseResult {
                             id,
                             passed,
