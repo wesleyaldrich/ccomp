@@ -114,6 +114,46 @@
   flex-shrink: 0;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.wsToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-primary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.wsToggleBtn:hover {
+  background-color: var(--color-active);
+  color: var(--color-text-primary);
+}
+
+.wsToggleBtnActive {
+  background-color: rgba(56, 139, 253, 0.15);
+  border-color: rgba(56, 139, 253, 0.45);
+  color: #58a6ff;
+}
+
+.wsPilcrow {
+  font-size: 12px;
+  line-height: 1;
+}
+
 .content {
   flex: 1;
   min-height: 0;
@@ -526,8 +566,25 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   overflow-y: auto;
+}
+
+.mismatchBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  background-color: rgba(210, 153, 34, 0.14);
+  border: 1px solid rgba(210, 153, 34, 0.35);
+  color: #e3b341;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.mismatchIcon {
+  flex-shrink: 0;
 }
 
 .ioRow {
@@ -543,9 +600,22 @@
   gap: 8px;
 }
 
+.ioLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .ioLabel {
   color: var(--color-text-primary);
   font-size: 13px;
+}
+
+.ioMeta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .ioBox {
@@ -558,9 +628,87 @@
   background-color: var(--color-surface);
   font-family: var(--font-mono, monospace);
   font-size: 12px;
+  line-height: 1.45;
   color: var(--color-text-primary);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.ioLine {
+  min-height: 1.45em;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Whitespace Visualization Glyphs & Diff Highlights */
+
+.wsSpace {
+  position: relative;
+}
+
+.wsSpace::after {
+  content: '·';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: rgba(148, 163, 184, 0.55);
+  pointer-events: none;
+  user-select: none;
+}
+
+.wsDiffSpace {
+  background-color: rgba(248, 81, 73, 0.26);
+  border-radius: 2px;
+}
+
+.wsDiffSpace::after {
+  color: #ff7b72;
+  font-weight: 700;
+}
+
+.wsTab {
+  position: relative;
+}
+
+.wsTab::after {
+  content: '→';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: rgba(148, 163, 184, 0.55);
+  pointer-events: none;
+  user-select: none;
+}
+
+.wsDiffTab {
+  background-color: rgba(248, 81, 73, 0.26);
+  border-radius: 2px;
+}
+
+.wsDiffTab::after {
+  color: #ff7b72;
+  font-weight: 700;
+}
+
+.diffChar {
+  background-color: rgba(248, 81, 73, 0.26);
+  color: #ffa198;
+  border-radius: 2px;
+}
+
+.wsNewline {
+  color: rgba(96, 165, 250, 0.8);
+  font-size: 11px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.wsNewlineDiff {
+  color: #ff7b72;
+  background-color: rgba(248, 81, 73, 0.24);
+  border-radius: 2px;
+  padding: 0 3px;
+  font-weight: 700;
 }
 
 .emptyText {
@@ -574,10 +722,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   padding: 20px;
   text-align: center;
   color: var(--color-text-muted);
+}
+
+.emptyIconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: var(--color-focus);
 }
 
 .emptyStateTitle {
@@ -591,4 +751,9 @@
   font-size: 12px;
   line-height: 1.5;
   color: var(--color-text-secondary);
+}
+
+.highlightRun {
+  color: var(--color-focus);
+  font-weight: 500;
 }
