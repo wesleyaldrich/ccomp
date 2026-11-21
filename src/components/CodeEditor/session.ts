@@ -54,8 +54,7 @@ async function doRestore() {
     const activePath = (await store.get<string | null>('activePath')) ?? null;
 
     for (const path of openPaths) {
-      // silent: file yang sudah dihapus/dipindah dilewati tanpa popup error
-      await openFileFromDisk(path, { silent: true });
+      await openFileFromDisk(path);
     }
 
     if (activePath) {

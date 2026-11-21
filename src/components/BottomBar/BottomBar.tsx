@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Info } from 'lucide-react';
 import styles from './BottomBar.module.css';
+// Static Analysis
+import AnalysisView from '../StaticAnalysis/AnalysisView';
 
 interface TestCase {
     id: string;
@@ -362,13 +364,22 @@ function BottomBar() {
     const [tabs, setTabs] = useState<TestTab[]>([]);
     const [activeTabId, setActiveTabId] = useState<string | null>(null);
     const [whitespaceOverride, setWhitespaceOverride] = useState<boolean | null>(null);
+    // Static Analysis
+    const [activeView, setActiveView] = useState<'tests' | 'analysis'>('tests');
 
     /* Adjustable bottom bar height */
     const [bottomBarHeight, setBottomBarHeight] = useState(280);
 
     useEffect(() => {
-        window.dispatchEvent(new CustomEvent('onBottomBarStateChange', { detail: { isOpen } }));
-    }, [isOpen]);
+        const publishState = () => {
+            window.dispatchEvent(new CustomEvent('onBottomBarStateChange', { detail: { isOpen, activeView } }));
+        };
+
+        publishState();
+        window.addEventListener('onRequestBottomBarState', publishState);
+
+        return () => window.removeEventListener('onRequestBottomBarState', publishState);
+    }, [isOpen, activeView]);
 
     useEffect(() => {
         if (activeTabId && !tabs.find(t => t.id === activeTabId)) {
@@ -384,6 +395,8 @@ function BottomBar() {
             const testCasesMap = detail.testCasesMap || {};
 
             setIsOpen(true);
+            // Static Analysis: hasil test kembali menampilkan Test Results.
+            setActiveView('tests');
 
             const now = new Date();
             const executeAtStr = now.toLocaleTimeString('en-US', { hour12: false });
@@ -400,6 +413,7 @@ function BottomBar() {
                         expectedOutput: ''
                     });
 
+                    // Gunakan perbandingan string kosong murni (tanpa .trim()) agar spasi kosong (" ") tetap dianggap valid
                     const currentExpected = matchingTestCase ? matchingTestCase.expectedOutput : testCaseData.expectedOutput;
                     const expectedIsEmpty = !currentExpected || currentExpected === '';
                     let statusStr = res.error ? 'RUNTIME ERROR' : (res.passed ? 'ACCEPTED' : 'WRONG ANSWER');
@@ -467,18 +481,29 @@ function BottomBar() {
             setTabs(prev => prev.filter(t => t.id !== id));
         };
 
-        const handleToggle = () => setIsOpen(prev => !prev);
+        // Static Analysis: toggle tetap menutup panel jika mode yang sama sedang aktif.
+        const handleToggle = () => {
+            setIsOpen(prev => activeView === 'tests' ? !prev : true);
+            setActiveView('tests');
+        };
+
+        const handleToggleAnalysis = () => {
+            setIsOpen(prev => activeView === 'analysis' ? !prev : true);
+            setActiveView('analysis');
+        };
 
         window.addEventListener('onTestResultsComputed', handleTestResults);
         window.addEventListener('onDeleteTestCase', handleDelete);
         window.addEventListener('onToggleBottomBar', handleToggle);
+        window.addEventListener('onToggleAnalysis', handleToggleAnalysis);
 
         return () => {
             window.removeEventListener('onTestResultsComputed', handleTestResults);
             window.removeEventListener('onDeleteTestCase', handleDelete);
             window.removeEventListener('onToggleBottomBar', handleToggle);
+            window.removeEventListener('onToggleAnalysis', handleToggleAnalysis);
         };
-    }, [activeTabId]); 
+    }, [activeTabId, activeView]); 
 
     function closeTab(e: React.MouseEvent, id: string) {
         e.stopPropagation();
@@ -552,11 +577,11 @@ function BottomBar() {
 
                     <div className={styles.header}>
                         <div className={styles.headerTitle}>
-                            <span>Test Results</span>
+                            <span>{activeView === 'analysis' ? 'Analysis' : 'Test Results'}</span>
                         </div>
                         
                         <div className={styles.tabsContainer}>
-                            {tabs.map(tab => {
+                            {activeView === 'tests' && tabs.map(tab => {
                                 const isActive = activeTabId === tab.id;
                                 return (
                                     <div 
@@ -577,7 +602,7 @@ function BottomBar() {
                             })}
                         </div>
 
-                        {activeTabData && (
+                        {activeView === 'tests' && activeTabData && (
                             <div className={styles.headerActions}>
                                 <button
                                     type="button"
@@ -593,7 +618,9 @@ function BottomBar() {
                     </div>
 
                     <div className={styles.content}>
-                        {activeTabData ? (
+                        {activeView === 'analysis' ? (
+                            <AnalysisView />
+                        ) : activeTabData ? (
                             <div className={styles.resultLayout}>
                                 <div className={styles.statsPanel}>
                                     {[

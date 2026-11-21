@@ -66,12 +66,15 @@ pub async fn run_code(
             .parent()
             .ok_or("Invalid GCC installation directory.")?;
 
+        let mingw_dir = bin_dir.parent().unwrap();
+
         let existing_path = std::env::var("PATH").unwrap_or_default();
         let compiler_path =
             format!("{};{}", bin_dir.display(), existing_path);
 
         // Compile
         let output = Command::new(&gcc_path)
+            .arg(format!("-B{}/", mingw_dir.display()))
             .arg(&source)
             .arg("-std=gnu11")
             .arg("-O2")
@@ -90,10 +93,7 @@ pub async fn run_code(
         // Launch executable in a new CMD window.
         const CREATE_NEW_CONSOLE: u32 = 0x00000010;
 
-        let command = format!(
-            " \"\"{}\"\"",
-            executable.display()
-        );
+        let command = format!("\"{}\"", executable.display());
 
         Command::new("cmd.exe")
             .arg("/K")

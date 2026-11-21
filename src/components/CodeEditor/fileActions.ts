@@ -10,6 +10,7 @@ import {
   normalizePath,
   samePath,
 } from './pathUtils';
+import { analyzeFile } from './analysisActions';
 
 const MAIN_TABSET_ID = 'main_tabset';
 
@@ -76,34 +77,52 @@ export function createUntitledTab() {
 const opening = new Set<string>();
 
 /** Buka file dari disk ke tab editor. Kalau sudah terbuka, cukup pindah ke tab-nya. */
-export async function openFileFromDisk(filePath: string, options?: { silent?: boolean }) {
-  const existingId = findTabIdByPath(filePath);
-  if (existingId) {
-    flexlayoutModel.doAction(Actions.selectTab(existingId));
-    return;
-  }
+export async function openFileFromDisk(filePath: string) {
+    const existingId = findTabIdByPath(filePath);
 
-  const key = normalizePath(filePath);
-  if (opening.has(key)) return; // cegah double-click membuka dua tab
-  opening.add(key);
+    if (existingId) {
+        flexlayoutModel.doAction(Actions.selectTab(existingId));
+        return;
+    }
+
+    const key = normalizePath(filePath);
+    if (opening.has(key)) return; // cegah double-click membuka dua tab
+
+    opening.add(key);
 
   try {
-    const content = await invoke<string>('read_file_content', { filePath });
+    let content = '';
+    let error: string | undefined;
+
+    try {
+        content = await invoke<string>('read_file_content', { filePath });
+    } catch (err) {
+        error = String(err);
+        console.error('Gagal membuka file:', err);
+    }
+
     const title = basename(filePath);
     const id = newTabId();
+
     addTab({
-      id,
-      path: filePath,
-      title,
-      content,
-      savedContent: content,
-      language: languageFromFileName(title),
+        id,
+        path: filePath,
+        title,
+        content,
+        savedContent: content,
+        language: languageFromFileName(title),
+        error,
     });
     closePristineUntitled(id);
-  } catch (err) {
-    console.error('Gagal membuka file:', err);
-    if (!options?.silent) {
-      await message(String(err), { title: 'Gagal membuka file', kind: 'error' });
+
+    const extension = filePath
+      .split('.')
+      .pop()
+      ?.toLowerCase();
+
+
+    if (extension === 'c') {
+      void analyzeFile(id, filePath);
     }
   } finally {
     opening.delete(key);
@@ -117,6 +136,12 @@ export async function saveFile(id: string): Promise<boolean> {
   const file = useTabStore.getState().openFiles.get(id);
   if (!file || saving.has(id)) return false;
   saving.add(id);
+  
+  // Kalo si filenya ada error message, isi contentnya bakal kosongan, jadi jangan sampe bisa disave 
+  if (file.error) {
+    console.error("Running file with error is not allowed.");
+    return false;
+  }
 
   try {
     let path = file.path;

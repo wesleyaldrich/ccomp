@@ -18,6 +18,7 @@ import { confirmCloseDirtyTab, consumeEditorFocusRequest, saveFile } from './fil
 import { schedulePersist } from './session';
 import styles from './CodeEditor.module.css';
 import { invoke } from '@tauri-apps/api/core';
+import { analyzeActiveFile } from './analysisActions';
 
 function EditorTab({ fileId }: { fileId: string }) {
   const file = useTabStore((s) => s.openFiles.get(fileId));
@@ -77,6 +78,16 @@ function EditorTab({ fileId }: { fileId: string }) {
 
   if (!file) {
     return <div style={{ color: '#aaa', padding: 16 }}>Memuat file...</div>;
+  }
+
+  // If there is error (such as when the file is not UTF-8)
+  if (file.error) {
+      return (
+          <div className={styles.errorContainer}>
+              <h3>Unable to display file</h3>
+              <p>{file.error}</p>
+          </div>
+      );
   }
 
   return (
@@ -238,13 +249,19 @@ export default function CodeEditor() {
   }, []);
 
   const handleRenderTabSet = useCallback((
-    node: TabSetNode | BorderNode,
-    renderValues: ITabSetRenderValues
+  node: TabSetNode | BorderNode,
+  renderValues: ITabSetRenderValues
   ) => {
-    console.log('TABSET CALLBACK FIRED', node.getId());
-    console.log('Render values:', renderValues);
+    console.log('TABSET CALLBACK FIRED', node.getId())
 
     renderValues.buttons.push(
+      <button
+        key="analyze"
+        className={styles.runButton}
+        onClick={handleAnalyze}
+      >
+        Analyze
+      </button>,
       <button
         key="run"
         className={styles.runButton}
@@ -289,6 +306,12 @@ export default function CodeEditor() {
       console.log('Active file not found.');
       return;
     }
+    
+    // Kalo misal ada error, isi filenya kosongan, jadi jangan ada logic run
+    if (file.error) {
+      console.warn("Running file with error is not allowed.")
+      return;
+    }
 
     if (!file.path) {
       console.log('Please save the file before running.');
@@ -301,6 +324,10 @@ export default function CodeEditor() {
 
     console.log(result);
   };
+
+  const handleAnalyze = async () => {
+  await analyzeActiveFile();
+};
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

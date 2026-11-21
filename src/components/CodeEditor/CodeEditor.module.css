@@ -208,3 +208,18 @@
   background-color: rgba(228, 127, 44, 0.4) !important;
   border-radius: 2px;
 }
+
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 24px;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.errorContainer h3 {
+    color: var(--color-text-primary);
+}
